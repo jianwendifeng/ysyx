@@ -13,132 +13,173 @@
 * See the Mulan PSL v2 for more details.
 ***************************************************************************************/
 
-#include "local-include/reg.h"
 #include <cpu/cpu.h>
-#include <cpu/ifetch.h>
 #include <cpu/decode.h>
-
-#define R(i) gpr(i)
-#define Mr vaddr_read
-#define Mw vaddr_write
-
-enum {
-  TYPE_I, TYPE_U, TYPE_S, TYPE_J, TYPE_B, TYPE_R,
-  TYPE_N, // none
-};
-
-#define src1R() do { *src1 = R(rs1); } while (0)
-#define src2R() do { *src2 = R(rs2); } while (0)
-#define immI() do { *imm = SEXT(BITS(i, 31, 20), 12); } while(0)
-#define immU() do { *imm = SEXT(BITS(i, 31, 12), 20) << 12; } while(0)
-#define immS() do { *imm = (SEXT(BITS(i, 31, 25), 7) << 5) | BITS(i, 11, 7); } while(0)
-#define immJ() do { *imm = (SEXT(BITS(i, 31, 31) ,1) << 20) | (BITS(i, 19, 12) << 12) | (BITS(i, 20, 20) << 11)|(BITS(i, 30, 21) << 1); } while(0)
-#define immB() do { *imm = (SEXT(BITS(i, 31, 31) ,1) << 12) | (BITS(i, 7, 7) << 11) | (BITS(i, 30, 25) << 5) | (BITS(i, 11, 8) << 1); } while(0)
+#include <cpu/difftest.h>
+#include <locale.h>
 
 
-static void decode_operand(Decode *s, int *rd, word_t *src1, word_t *src2, word_t *imm, int type) {
-  uint32_t i = s->isa.inst.val;
-  int rs1 = BITS(i, 19, 15);
-  int rs2 = BITS(i, 24, 20);
-  *rd     = BITS(i, 11, 7);
-  switch (type) {    
-    case TYPE_I: src1R();          immI(); break;
-    case TYPE_U:                   immU(); break;
-    case TYPE_S: src1R(); src2R(); immS(); break;
-		case TYPE_J:									 immJ(); break;
-		case TYPE_B: src1R(); src2R(); immB(); break;
-		case TYPE_R: src1R(); src2R();				 break;
+/* The assembly code of instructions executed is only output to the screen
+ * when the number of instructions executed is less than this value.
+ * This is useful when you use the `si' command.
+ * You can modify this value as you want.
+ */
+#define MAX_INST_TO_PRINT 10
+
+#define iringbuf_size 16 //size of iringbuf
+
+CPU_state cpu = {};
+uint64_t g_nr_guest_inst = 0;
+static uint64_t g_timer = 0; // unit: us
+static bool g_print_step = false;
+
+void device_update();
+
+#ifdef CONFIG_ITRACE_COND
+long int instr_num();
+
+struct ringbuf
+{
+  Decode instr[iringbuf_size];	//data
+  int num;
+
+} iringbuf={0};
+
+void write_iringbuf(Decode s){
+  iringbuf.instr[iringbuf.num % iringbuf_size] = s;
+  // iringbuf.num = (iringbuf.num++)%16;  //undefined operation
+  iringbuf.num++;
+  iringbuf.num = iringbuf.num % iringbuf_size;
+}
+
+void read_iringbuf(){
+  int i = iringbuf.num ;
+  int n = iringbuf_size;
+  printf("\n");
+  while(n--)
+  {
+    printf("%s\t\t\n",iringbuf.instr[i % iringbuf_size].logbuf);
+    i++;
+  }
+  printf("\n\n");
+}
+#endif
+
+static void trace_and_difftest(Decode *_this, vaddr_t dnpc) {
+#ifdef CONFIG_ITRACE_COND
+  if (ITRACE_COND) { log_write("%s\n", _this->logbuf); //itrace
+  }  
+#endif
+  if (g_print_step) { IFDEF(CONFIG_ITRACE, puts(_this->logbuf)); }
+  IFDEF(CONFIG_DIFFTEST, difftest_step(_this->pc, dnpc));
+
+  #ifdef CONFIG_ITRACE
+  //write_iringbuf(_this);  //iringbuf
+  if (nemu_state.halt_ret != 0 || nemu_state.state != NEMU_RUNNING) { read_iringbuf(); }  //when nemu output iringbuf.Difftest will change nemu.state.state = NEMU_ABROAT;nemu_state.hal_ret = pc
+  #endif
+}
+
+static void exec_once(Decode *s, vaddr_t pc) {
+  s->pc = pc;
+  s->snpc = pc;
+  isa_exec_once(s);
+  cpu.pc = s->dnpc;
+#ifdef CONFIG_ITRACE
+  char *p = s->logbuf;
+  p += snprintf(p, sizeof(s->logbuf), FMT_WORD ":", s->pc);
+  int ilen = s->snpc - s->pc;
+  int i;
+  uint8_t *inst = (uint8_t *)&s->isa.inst.val;
+  for (i = ilen - 1; i >= 0; i --) {
+    p += snprintf(p, 4, " %02x", inst[i]);
+  }
+  int ilen_max = MUXDEF(CONFIG_ISA_x86, 8, 4);
+  int space_len = ilen_max - ilen;
+  if (space_len < 0) space_len = 0;
+  space_len = space_len * 3 + 1;
+  memset(p, ' ', space_len);
+  p += space_len;
+
+#ifndef CONFIG_ISA_loongarch32r
+  void disassemble(char *str, int size, uint64_t pc, uint8_t *code, int nbyte);
+  disassemble(p, s->logbuf + sizeof(s->logbuf) - p,
+      MUXDEF(CONFIG_ISA_x86, s->snpc, s->pc), (uint8_t *)&s->isa.inst.val, ilen);
+#else
+  p[0] = '\0'; // the upstream llvm does not support loongarch32r
+#endif
+#endif
+}
+
+extern void write_iringbuf(Decode s);
+
+static void execute(uint64_t n) {
+  Decode s;
+  for (;n > 0; n --) {
+    // #ifdef CONFIG_ITRACE
+    //   write_iringbuf(s);  //iringbuf
+    // #endif
+    exec_once(&s, cpu.pc);
+    g_nr_guest_inst ++;
+    trace_and_difftest(&s, cpu.pc);
+    if (nemu_state.state != NEMU_RUNNING) {
+      break;
+    }
+    IFDEF(CONFIG_DEVICE, device_update());
+    #
+
+    #ifdef CONFIG_ITRACE
+       write_iringbuf(s);  //iringbuf
+    #endif
   }
 }
 
-static int decode_exec(Decode *s) {
-  int rd = 0;
-  word_t src1 = 0, src2 = 0, imm = 0;	//word_t uint64_t;	sword_t int64_t
-  s->dnpc = s->snpc;
-
-#define INSTPAT_INST(s) ((s)->isa.inst.val)
-#define INSTPAT_MATCH(s,  name,  type, ... /* execute body */ ) { \
-  decode_operand(s, &rd, &src1, &src2, &imm, concat(TYPE_, type)); \
-  __VA_ARGS__ ; \
+static void statistic() {
+  IFNDEF(CONFIG_TARGET_AM, setlocale(LC_NUMERIC, ""));
+#define NUMBERIC_FMT MUXDEF(CONFIG_TARGET_AM, "%", "%'") PRIu64
+  Log("host time spent = " NUMBERIC_FMT " us", g_timer);
+  Log("total guest instructions = " NUMBERIC_FMT, g_nr_guest_inst);
+  if (g_timer > 0) Log("simulation frequency = " NUMBERIC_FMT " inst/s", g_nr_guest_inst * 1000000 / g_timer);
+  else Log("Finish running in less than 1 us and can not calculate the simulation frequency");
 }
 
-  INSTPAT_START();
-  INSTPAT("??????? ????? ????? ??? ????? 00101 11", auipc  , U, R(rd) = s->pc + imm);
-  INSTPAT("??????? ????? ????? 011 ????? 00000 11", ld     , I, R(rd) = Mr(src1 + imm, 8));
-  INSTPAT("??????? ????? ????? 011 ????? 01000 11", sd     , S, Mw(src1 + imm, 8, src2));
-	
-	//dummy 
-	INSTPAT("??????? ????? ????? 000 ????? 00100 11", addi   , I, R(rd) = src1 + imm );
-  INSTPAT("??????? ????? ????? 000 ????? 00110 11", addiw  , I, R(rd) = SEXT(src1 + imm, 32) );
-	INSTPAT("0000000 ????? ????? 000 ????? 01110 11", addw   , R, R(rd) = SEXT(src1 + src2, 32) );
-  INSTPAT("0000000 ????? ????? 000 ????? 01100 11", add    , R, R(rd) = src1 + src2 );
-	INSTPAT("??????? ????? ????? ??? ????? 01101 11", lui    , U, R(rd) = imm);
-	INSTPAT("??????? ????? ????? ??? ????? 11011 11", jal    , J, R(rd) = s->pc + 4; s->dnpc = s->pc + imm );
-	INSTPAT("??????? ????? ????? 000 ????? 11001 11", jalr   , I, R(rd) = s->pc + 4; s->dnpc = (src1 + imm) &~ 1 );
+#ifdef CONFIG_ITRACE
+long int instr_num() {  
+  return g_nr_guest_inst; //the num of intsruction having run
+}
+#endif
 
-	INSTPAT("??????? ????? ????? 000 ????? 11000 11", beq    , B, s->dnpc = (src1 == src2) ? s->pc + imm: s->dnpc );
-  INSTPAT("??????? ????? ????? 001 ????? 11000 11", bne    , B, s->dnpc = (src1 != src2) ? s->pc + imm: s->dnpc );
-  INSTPAT("??????? ????? ????? 100 ????? 11000 11", blt    , B, s->dnpc = ((sword_t)src1 < (sword_t)src2)  ? s->pc + imm: s->dnpc );	//signed
-  INSTPAT("??????? ????? ????? 110 ????? 11000 11", bltu   , B, s->dnpc = ((unsigned int)src1 < (unsigned int)src2) ? s->pc + imm : s->dnpc );
-	INSTPAT("??????? ????? ????? 101 ????? 11000 11", bge    , B, s->dnpc = ((sword_t)src1 >= (sword_t)src2) ? s->pc + imm: s->dnpc );
-  INSTPAT("??????? ????? ????? 111 ????? 11000 11", bgeu   , B, s->dnpc = ((unsigned int)src1 >= (unsigned int)src2) ? s->pc + imm: s->dnpc );
-  
-	INSTPAT("0000000 ????? ????? 111 ????? 01100 11", and    , R, R(rd) = src1 & src2 );
-	INSTPAT("??????? ????? ????? 111 ????? 00100 11", andi   , I, R(rd) = src1 & imm ); 
-  //INSTPAT("??????? ????? ????? 110 ????? 00100 11", ori    , I, R(rd) = src1 | imm );
-  INSTPAT("??????? ????? ????? 100 ????? 00100 11", xori   , I, R(rd) = src1 ^ imm );
-	
-  INSTPAT("0000000 ????? ????? 110 ????? 01100 11", or     , R, R(rd) = src1 | src2 );
-  //INSTPAT("0000000 ????? ????? 100 ????? 01100 11", xor    , R, R(rd) = src1 ^ src2 );
-
-  //INSTPAT("0000000 ????? ????? 000 ????? 01100 11", add    , R, R(rd) = src1 + src2 );
-  INSTPAT("0000000 ????? ????? 010 ????? 01100 11", slt    , R, R(rd) = (sword_t)src1 < (sword_t)src2 );
-  INSTPAT("??????? ????? ????? 011 ????? 01100 11", sltu   , R, R(rd) = src1 < src2 );
-	INSTPAT("0000000 ????? ????? 011 ????? 00100 11", sltiu  , I, R(rd) = src1 < imm );
-	INSTPAT("0100000 ????? ????? 000 ????? 01100 11", sub    , R, R(rd) = src1 - src2) ;
-	INSTPAT("0100000 ????? ????? 000 ????? 01110 11", subw   , R, R(rd) = SEXT(src1 - src2,32) );
-  INSTPAT("0100000 ????? ????? 101 ????? 01110 11", sraw   , R, R(rd) = SEXT(src1 >> src2,32) );	//int src1
-  INSTPAT("0000000 ????? ????? 001 ????? 01110 11", sllw   , R, R(rd) = src1 << src2 );
-	INSTPAT("0000000 ????? ????? 101 ????? 01110 11", srlw   , R, R(rd) = SEXT((uint32_t)src1 >> src2,32) );
-	INSTPAT("0100000 ????? ????? 101 ????? 00100 11", srai   , I, R(rd) = SEXT(src1 >> imm,32) );
-	INSTPAT("000000? ????? ????? 001 ????? 00100 11", slli   , I, R(rd) = src1 << imm );	//riscv32i funct 0000000,riscv64i 000000?
-	INSTPAT("000000? ????? ????? 101 ????? 00100 11", srli   , I, R(rd) = src1 >> imm );
-	INSTPAT("0000000 ????? ????? 001 ????? 00110 11", slliw  , I, R(rd) = SEXT((uint32_t)src1 << imm, 32) );
-	INSTPAT("0000000 ????? ????? 101 ????? 00110 11", srliw  , I, R(rd) = SEXT((uint32_t)src1 >> imm, 32) );	//uint32_t src1 will
-	INSTPAT("0100000 ????? ????? 101 ????? 00110 11", sraiw  , I, R(rd) = SEXT(src1 >> imm, 32) );
-
-	INSTPAT("??????? ????? ????? 010 ????? 01000 11", sw     , S, Mw(src1 +imm, 4, src2));	//32
-	INSTPAT("??????? ????? ????? 001 ????? 01000 11", sh     , S, Mw(src1 +imm, 2, src2));	//16
-	INSTPAT("??????? ????? ????? 000 ????? 01000 11", sb     , S, Mw(src1 +imm, 1, src2));	//8
-	INSTPAT("??????? ????? ????? 010 ????? 00000 11", lw     , I, R(rd) = SEXT(Mr(src1 + imm, 4),32) );	//sign-extended 32 to 64
-	INSTPAT("??????? ????? ????? 001 ????? 00000 11", lh     , I, R(rd) = SEXT(Mr(src1 + imm, 2),16) );	//16bits
-	INSTPAT("??????? ????? ????? 100 ????? 00000 11", lbu    , I, R(rd) = Mr(src1 + imm, 1) );	//zero extend 8 to 64
-	INSTPAT("??????? ????? ????? 101 ????? 00000 11", lhu    , I, R(rd) = Mr(src1 + imm, 2) );	//16
-	//INSTPAT("??????? ????? ????? 110 ????? 00000 11", lwu		 , I, R(rd) = Mr(src1 + src2, 4) ); //32
-	INSTPAT("??????? ????? ????? 011 ????? 00000 11", ld		 , I, R(rd) = Mr(src1 + src2, 8));	//64
-
-	INSTPAT("0000001 ????? ????? 000 ????? 01100 11", mul    , R, R(rd) = src1 * src2 );
-	//INSTPAT("??????? ????? ????? ??? ????? ????? ??", mulh   , R, INV(s->pc));
-	INSTPAT("0000001 ????? ????? 000 ????? 01110 11", mulw   , R, R(rd) = SEXT(BITS(src1 * src2, 31, 0), 32) );
-	INSTPAT("0000001 ????? ????? 100 ????? 01110 11", divw   , R, R(rd) = SEXT(BITS(src1 / src2, 31, 0), 32) );
-	//INSTPAT("0000001 ????? ????? 100 ????? 01110 11", divuw  , R, R(rd) = SEXT(BITS(src1 / src2, 31, 0), 64) );
-	INSTPAT("0000001 ????? ????? 110 ????? 01110 11", remw   , R, R(rd) = SEXT(src1 % src2, 32) );
-	//INSTPAT("0000001 ????? ????? 111 ????? 01110 11", remuw  , R, R(rd) = SEXT(BITS(src1 / src2, 31, 0), 64) );
-
-	INSTPAT("0000000 00001 00000 000 00000 11100 11", ebreak , N, NEMUTRAP(s->pc, R(10))); // R(10) is $a0
-  INSTPAT("??????? ????? ????? ??? ????? ????? ??", inv    , N, INV(s->pc));
-  
-	INSTPAT_END();
-
-  R(0) = 0; // reset $zero to 0
-	
-
-
-  return 0;
-
+void assert_fail_msg() {
+  isa_reg_display();
+  statistic();
 }
 
-int isa_exec_once(Decode *s) {
-  s->isa.inst.val = inst_fetch(&s->snpc, 4);
-  return decode_exec(s);
+/* Simulate how the CPU works. */
+void cpu_exec(uint64_t n) {
+  g_print_step = (n < MAX_INST_TO_PRINT);
+  switch (nemu_state.state) {
+    case NEMU_END: case NEMU_ABORT:
+      printf("Program execution has ended. To restart the program, exit NEMU and run again.\n");
+      return;
+    default: nemu_state.state = NEMU_RUNNING;
+  }
+
+  uint64_t timer_start = get_time();
+  
+  execute(n);
+
+  uint64_t timer_end = get_time();
+  g_timer += timer_end - timer_start;
+
+  switch (nemu_state.state) {
+    case NEMU_RUNNING: nemu_state.state = NEMU_STOP; break;
+
+    case NEMU_END: case NEMU_ABORT:
+      Log("nemu: %s at pc = " FMT_WORD,
+          (nemu_state.state == NEMU_ABORT ? ANSI_FMT("ABORT", ANSI_FG_RED) :
+           (nemu_state.halt_ret == 0 ? ANSI_FMT("HIT GOOD TRAP", ANSI_FG_GREEN) :
+            ANSI_FMT("HIT BAD TRAP", ANSI_FG_RED))),
+          nemu_state.halt_pc);
+      // fall through
+    case NEMU_QUIT: statistic();
+  }
 }
