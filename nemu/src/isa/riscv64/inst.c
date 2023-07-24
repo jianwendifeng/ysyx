@@ -23,9 +23,9 @@
 #define Mw vaddr_write
 
 
-extern void ftrace_call(vaddr_t pc,vaddr_t dnpc);
+void ftrace_call(vaddr_t pc,vaddr_t dnpc);
 
-extern void ftrace_ret(vaddr_t pc,vaddr_t dnpc);
+void ftrace_ret(vaddr_t pc,vaddr_t dnpc);
 
 enum {
   TYPE_I, TYPE_U, TYPE_S, TYPE_J, TYPE_B, TYPE_R,
