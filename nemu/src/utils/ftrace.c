@@ -10,14 +10,36 @@
 extern uint64_t g_nr_guest_inst;
 
 
-Elf64_Ehdr elf_header;
+//Elf64_Ehdr elf_header;
+Elf64_Shdr strtab_hdr, symtab_hdr;
 Elf64_Shdr sectionHeader;
-Elf64_Shdr sym_tab;     //符号表
-Elf64_Shdr str_tab;     //字符串表
+
 Elf64_Sym  func[func_num_max];
 int func_num = 0;
 Elf64_Addr symbol_start ;
 Elf64_Addr symbol_end ;
+
+// 读取字符串表和符号表的内容
+
+void read_symbol_table(FILE *file, Elf64_Shdr symtab_hdr){
+    Elf64_Sym* symtab = (Elf64_Sym*)malloc(symtab_hdr.sh_size);
+    assert(fseek(file, symtab_hdr.sh_offset, SEEK_SET));
+    assert(fread(symtab, symtab_hdr.sh_size, 1, file));
+    int num_syms = symtab_hdr.sh_size / sizeof(Elf64_Sym);
+    for (int i = 0; i < num_syms; i++) {
+        Elf64_Sym* sym = &symtab[i];
+        if (ELF64_ST_TYPE(sym->st_info) == STT_FUNC) {
+            func[func_num++] = *sym;
+        } 
+    }
+    free(symtab);
+}
+
+void read_string_table(FILE *file, Elf64_Shdr strtab_hdr){
+    
+
+}
+
 
 
 
@@ -29,61 +51,34 @@ void init_ftrace(const char *elf_file) {
         assert(0);
     }
 
-    // 读取 ELF 文件头
-    if(fread(&elf_header, sizeof(Elf64_Ehdr), 1, file) != 1){
-        printf("Error reading ELF header\n");
-        fclose(file);
-        assert(0);
-    }
+    Elf64_Ehdr elf_header;
+    if(fread(&elf_header, sizeof(Elf64_Ehdr), 1, file) != 1 ) assert(0);
+    //assert(fread(&elf_header, sizeof(Elf64_Ehdr), 1, file));
 
-    //int sym_tab_num = sym_tab.sh_size / sizeof(Elf64_Sym);          //符号表的数量
-    Elf64_Half sym_tab_num = elf_header.e_shnum;
-
-    int i;
-    // 定位节头表
     fseek(file, elf_header.e_shoff, SEEK_SET);
-    for (i = 0; i < elf_header.e_shnum; i++) {                          //e_shnum 此成员保存节标题表中的条目数
-        if (fread(&sectionHeader, sizeof(Elf64_Shdr), 1, file) != 1) {  //成功读取，文件指针自动移动到下一个要读取的位置
-            printf("Error reading section header%d\n",i);
-            fclose(file);
-            assert(0);
-        }
-        // 遍历符号表中的每个符号表项
+    for (int i = 0; i < elf_header.e_shnum; i++) {
+        Elf64_Shdr section_hdr;
+        if(fread(&section_hdr, sizeof(Elf64_Shdr), 1, file) !=1 ) assert(0);
+        //assert(fread(&section_hdr, sizeof(Elf64_Shdr), 1, file));
 
-        for (int j = 0; j < sym_tab_num; j++) {
-            FILE* psym = file;
-            Elf64_Sym symbol;
-            if (fread(&symbol, sizeof(Elf64_Sym), 1, psym) != 1) {
-                printf("Error reading symbol entry\n");
-                fclose(file);
-                assert(0);
-            }
-
-            // 判断符号类型是否为 FUNC，如果是则将该符号保存到 func 数组中
-            if (ELF64_ST_TYPE(symbol.st_info) == STT_FUNC) {
-                if (func_num < func_num_max) {
-                    func[func_num++] = symbol;
-                } 
-                // else {
-                //     // 可以选择在 func 数组已满时进行相应的处理，例如跳出循环或者增加数组大小。
-                //     // break;
-                // }
-            }
+        if (section_hdr.sh_type == SHT_STRTAB ) {
+            strtab_hdr = section_hdr;
+            //assert(strtab_hdr);
         }
-        if(sectionHeader.sh_type == SHT_STRTAB){
-        str_tab = sectionHeader;                    //字符串表节头
-        break;
+        else if (section_hdr.sh_type == SHT_SYMTAB) {
+            symtab_hdr = section_hdr;
+            //assert(symtab_hdr);
         }
     }
-    //unsigned char symbol_type ;  //符号表的类型
-    // for(i = 0 ; i < sym_tab_num ; i++ ){
-        // if(ELF64_ST_TYPE(sym_tab[i].st_info) == STT_FUNC){
-        //    func[func_num++] = sym_tab[i];
-        // }
-    // }
-  fclose(file);
+    // 读取字符串表和符号表的内容
+    //read_string_table(file, strtab_hdr);
+    //read_symbol_table(file, symtab_hdr);
+    fclose(file);
 }
 
+char* get_string_from_offset(Elf64_Xword offset) {
+    return (char*)(strtab_hdr.sh_offset + offset);
+}
 
 
 char* find_name(vaddr_t dnpc){
@@ -92,9 +87,7 @@ char* find_name(vaddr_t dnpc){
         Elf64_Addr func_start = func[i].st_value;
         Elf64_Addr func_end = func_start + func[i].st_size;
         if ((dnpc >= func_start) && (dnpc <= func_end)) {
-            int symbol_name_index = func[i].st_name;
-            char* symbol_name = (char*)(str_tab.sh_offset + symbol_name_index);
-            return symbol_name;
+            return  get_string_from_offset(func[i].st_name);
         }
     }
     return "????";
