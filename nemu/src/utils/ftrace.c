@@ -16,7 +16,8 @@ extern uint64_t g_nr_guest_inst;
 // } elf_func[elf_func_num];
 
 
-void init_ftrace(const char *elf_file) {
+void init_ftrace(const char *file) {
+    FILE *elf_file = fopen(file,"rb");
     int NumSec = *(Elf64_Half*)(elf_file + 60);     //60 偏移位置得到区节数量
 
     Elf64_Ehdr* pfilehead = (Elf64_Ehdr*)elf_file;
@@ -44,6 +45,8 @@ void init_ftrace(const char *elf_file) {
         }
 
     }
+
+    fclose(elf_file);
 //   FILE *file = fopen(elf_file,"rb");
 //   if(file){
 //     // 读取 ELF 文件头
