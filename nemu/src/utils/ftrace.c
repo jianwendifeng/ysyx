@@ -95,7 +95,7 @@ char* find_name(vaddr_t dnpc){
 
 static int ftrace_num = 0; 
 
-void ftrace_call(vaddr_t pc,vaddr_t dnpc){
+extern void ftrace_call(vaddr_t pc,vaddr_t dnpc){
     if(func[0].st_name == 0) return ;
     for(int i = 0 ; i < ftrace_num ; i++){
         printf("0x%#lx: ",pc); 
@@ -108,7 +108,7 @@ void ftrace_call(vaddr_t pc,vaddr_t dnpc){
 }
 }
 
-void ftrace_ret(vaddr_t pc,vaddr_t dnpc){
+extern void ftrace_ret(vaddr_t pc,vaddr_t dnpc){
     if(func[0].st_name == 0) return ;
     for(int i = 0 ; i <= ftrace_num ; i++){
         printf("0x%#lx: ",pc);
