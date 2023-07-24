@@ -102,6 +102,7 @@ void ftrace_call(vaddr_t pc,vaddr_t dnpc){
     char *func_name;
     func_name = find_name(dnpc);
     printf(" call [%s@0x%#lx]",func_name,dnpc);
+    assert(0);
     ftrace_num++;
 }
 }
