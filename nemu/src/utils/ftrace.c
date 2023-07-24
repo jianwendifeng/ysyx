@@ -17,6 +17,33 @@ extern uint64_t g_nr_guest_inst;
 
 
 void init_ftrace(const char *elf_file) {
+    int NumSec = *(Elf64_Half*)(elf_file + 60);     //60 偏移位置得到区节数量
+
+    Elf64_Ehdr* pfilehead = (Elf64_Ehdr*)elf_file;
+    Elf64_Half eshstrndx = pfilehead->e_shstrndx;
+
+    //得到偏移地址
+    Elf64_Shdr* psecheader = (Elf64_Shdr*)(elf_file + pfilehead->e_shoff);      //指向 Elf64_Shdr 结构体数组的指针,存储了ELF文件中所有节头的信息。
+    Elf64_Shdr* pshster = (Elf64_Shdr*)(psecheader + eshstrndx);
+    char* pshstrbuff = (char*)(elf_file + pshster->sh_offset);
+
+    for(int i = 0 ; i < NumSec ; i++)
+    {
+        printf("  [%2d] %-16s  ", i, (char *)(psecheader[i].sh_name + pshstrbuff));
+        switch(psecheader[i].sh_type)
+        {
+            case SHT_SYMTAB :       //符号表节
+                
+                break;
+            case SHT_STRTAB :       //字符串表节
+
+                break;
+
+            default :
+                break;
+        }
+
+    }
 //   FILE *file = fopen(elf_file,"rb");
 //   if(file){
 //     // 读取 ELF 文件头
