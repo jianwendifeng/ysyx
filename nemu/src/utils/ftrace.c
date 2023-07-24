@@ -4,207 +4,126 @@
 
 
 
-#define elf_func_num 64
+#define func_num_max 64
 
 extern uint64_t g_nr_guest_inst;
 
 
-// static struct {
-//   const char* name;
-//   uint64_t size;
-//   uint64_t address;
-// } elf_func[elf_func_num];
+Elf64_Ehdr elf_header;
+Elf64_Shdr sectionHeader;
+Elf64_Shdr sym_tab;     //符号表
+Elf64_Shdr str_tab;     //字符串表
+Elf64_Sym  func[func_num_max];
+int func_num = 0;
+Elf64_Addr symbol_start ;
+Elf64_Addr symbol_end ;
 
 
-void init_ftrace(const char *file) {
-    FILE *elf_file = fopen(file,"rb");
-    int NumSec = *(Elf64_Half*)(elf_file + 60);     //60 偏移位置得到区节数量
 
-    Elf64_Ehdr* pfilehead = (Elf64_Ehdr*)elf_file;
-    Elf64_Half eshstrndx = pfilehead->e_shstrndx;
-
-    //得到偏移地址
-    Elf64_Shdr* psecheader = (Elf64_Shdr*)(elf_file + pfilehead->e_shoff);      //指向 Elf64_Shdr 结构体数组的指针,存储了ELF文件中所有节头的信息。
-    Elf64_Shdr* pshster = (Elf64_Shdr*)(psecheader + eshstrndx);
-    char* pshstrbuff = (char*)(elf_file + pshster->sh_offset);
-
-    for(int i = 0 ; i < NumSec ; i++)
-    {
-        printf("elf:  [%2d] %-16s  ", i, (char *)(psecheader[i].sh_name + pshstrbuff));
-        switch(psecheader[i].sh_type)
-        {
-            case SHT_SYMTAB :       //符号表节
-                
-                break;
-            case SHT_STRTAB :       //字符串表节
-
-                break;
-
-            default :
-                break;
-        }
-
+void init_ftrace(const char *elf_file) {
+    FILE *file = fopen(elf_file,"rb");
+    if(!file){
+        printf("Can't open elf_file.\n");
+        fclose(file);
+        return ;
     }
 
-    fclose(elf_file);
-//   FILE *file = fopen(elf_file,"rb");
-//   if(file){
-//     // 读取 ELF 文件头
-//   Elf64_Ehdr elf_header;
-//   if(fread(&elf_header, sizeof(Elf64_Ehdr), 1, file) != 1){
-//     printf("Error reading ELF header\n");
-//     //assert(1);
-//   }
+    // 读取 ELF 文件头
+    if(fread(&elf_header, sizeof(Elf64_Ehdr), 1, file) != 1){
+        printf("Error reading ELF header\n");
+        fclose(file);
+        return ;
+    }
 
-//   // 定位节头表
-//   fseek(file, elf_header.e_shoff, SEEK_SET);
+    //int sym_tab_num = sym_tab.sh_size / sizeof(Elf64_Sym);          //符号表的数量
+    Elf64_Half sym_tab_num = elf_header.e_shnum;
 
-//   Elf64_Shdr sectionHeader;
-//   Elf64_Shdr symbolTableHeader;
+    int i;
+    // 定位节头表
+    fseek(file, elf_header.e_shoff, SEEK_SET);
+    for (i = 0; i < elf_header.e_shnum; i++) {                          //e_shnum 此成员保存节标题表中的条目数
+        if (fread(&sectionHeader, sizeof(Elf64_Shdr), 1, file) != 1) {  //成功读取，文件指针自动移动到下一个要读取的位置
+            printf("Error reading section header");
+            fclose(file);
+            return ;
+        }
+        // 遍历符号表中的每个符号表项
 
-//   int stringTableIndex = -1;
+        for (int j = 0; j < sym_tab_num; j++) {
+            FILE* psym = file;
+            Elf64_Sym symbol;
+            if (fread(&symbol, sizeof(Elf64_Sym), 1, psym) != 1) {
+                printf("Error reading symbol entry");
+                fclose(file);
+                return ;
+            }
 
-//   for (int i = 0; i < elf_header.e_shnum; i++) {      //e_shnum 此成员保存节标题表中的条目数
-//     if (fread(&sectionHeader, sizeof(Elf64_Shdr), 1, file) != 1) {
-//         printf("Error reading section header");
-//         fclose(file);
-//         //assert(1);
-//       }
-//     if (sectionHeader.sh_type == SHT_SYMTAB ) {     //SHT_SYMTAB 此部分包含符号表。
-//         stringTableIndex = sectionHeader.sh_link;
-//         symbolTableHeader = sectionHeader;
-//         break;
-//       }
-//     }FILE *file = fopen(elf_file,"rb");
-//   if(file){
-//     // 读取 ELF 文件头
-//   Elf64_Ehdr elf_header;
-//   if(fread(&elf_header, sizeof(Elf64_Ehdr), 1, file) != 1){
-//     printf("Error reading ELF header\n");
-//     //assert(1);
-//   }
-
-//   // 定位节头表
-//   fseek(file, elf_header.e_shoff, SEEK_SET);
-
-//   Elf64_Shdr sectionHeader;
-//   Elf64_Shdr symbolTableHeader;
-
-//   int stringTableIndex = -1;
-
-//   for (int i = 0; i < elf_header.e_shnum; i++) {      //e_shnum 此成员保存节标题表中的条目数
-//     if (fread(&sectionHeader, sizeof(Elf64_Shdr), 1, file) != 1) {
-//         printf("Error reading section header");
-//         fclose(file);
-//         //assert(1);
-//       }
-//     if (sectionHeader.sh_type == SHT_SYMTAB ) {     //SHT_SYMTAB 此部分包含符号表。
-//         stringTableIndex = sectionHeader.sh_link;
-//         symbolTableHeader = sectionHeader;
-//         break;
-//       }
-//     }
-
-//     if (stringTableIndex == -1) {
-//         printf("No symbol table found.\n");
-//         fclose(file);
-//         //assert(1);
-//     }
-
-//     fseek(file, sectionHeader.sh_offset, SEEK_SET);
-
-//     Elf64_Sym symbol;
-//     char *function_name = NULL;
-//     while (fread(&symbol, sizeof(Elf64_Sym), 1, file) == 1) {
-//         if (ELF64_ST_TYPE(symbol.st_info) == STT_FUNC) {
-//             Elf64_Addr symbol_start = symbol.st_value;
-//             Elf64_Addr symbol_end = symbol.st_value + symbol.st_size;
-
-//             // if (address >= symbol_start && address < symbol_end) {
-//             //     function_name = (char *)malloc(MAX_FUNCTION_NAME_LENGTH);
-//             //     if (!function_name) {
-//             //         printf("Memory allocation error\n");
-//             //         fclose(file);
-//             //         //return NULL;
-//             //     }
-//             fseek(file, symbolTableHeader.sh_offset + stringTableIndex + symbol.st_name, SEEK_SET);
-//                 if (fgets(function_name, MAX_FUNCTION_NAME_LENGTH, file) != NULL) {
-//                     // Remove newline character from the end of the function name
-//                     char *newline = strchr(function_name, '\n');
-//                     if (newline) {
-//                         *newline = '\0';
-//                     }
-//                 }
-//                 break;
-//         }
-//     }
-//   }
-
-
-//     fclose(file);
-
-//     if (function_name) {
-//         printf("FUNCTION:%s\n",function_name);
-//     } else {
-//         printf("Don't find FUNCTION\n");
-//     }
-//   // else{
-//   //    printf("Don't open ELF file\n");
-//   //   //assert(1);
-//   // }
-//   //   fclose(file);
-// }
-
-//     if (stringTableIndex == -1) {
-//         printf("No symbol table found.\n");
-//         fclose(file);
-//         //assert(1);
-//     }
-
-//     fseek(file, sectionHeader.sh_offset, SEEK_SET);
-
-//     Elf64_Sym symbol;
-//     char *function_name = NULL;
-//     while (fread(&symbol, sizeof(Elf64_Sym), 1, file) == 1) {
-//         if (ELF64_ST_TYPE(symbol.st_info) == STT_FUNC) {
-//             Elf64_Addr symbol_start = symbol.st_value;
-//             Elf64_Addr symbol_end = symbol.st_value + symbol.st_size;
-
-//             // if (address >= symbol_start && address < symbol_end) {
-//             //     function_name = (char *)malloc(MAX_FUNCTION_NAME_LENGTH);
-//             //     if (!function_name) {
-//             //         printf("Memory allocation error\n");
-//             //         fclose(file);
-//             //         //return NULL;
-//             //     }
-//             fseek(file, symbolTableHeader.sh_offset + stringTableIndex + symbol.st_name, SEEK_SET);
-//                 if (fgets(function_name, MAX_FUNCTION_NAME_LENGTH, file) != NULL) {
-//                     // Remove newline character from the end of the function name
-//                     char *newline = strchr(function_name, '\n');
-//                     if (newline) {
-//                         *newline = '\0';
-//                     }
-//                 }
-//                 break;
-//         }
-//     }
-//   }
-
-
-//     fclose(file);
-
-//     if (function_name) {
-//         printf("FUNCTION:%s\n",function_name);
-//     } else {
-//         printf("Don't find FUNCTION\n");
-//     }
-//   // else{
-//   //    printf("Don't open ELF file\n");
-//   //   //assert(1);
-//   // }
-//   //   fclose(file);
-// }
+            // 判断符号类型是否为 FUNC，如果是则将该符号保存到 func 数组中
+            if (ELF64_ST_TYPE(symbol.st_info) == STT_FUNC) {
+                if (func_num < func_num_max) {
+                    func[func_num++] = symbol;
+                } 
+                // else {
+                //     // 可以选择在 func 数组已满时进行相应的处理，例如跳出循环或者增加数组大小。
+                //     // break;
+                // }
+            }
+        }
+        if(sectionHeader.sh_type == SHT_STRTAB){
+        str_tab = sectionHeader;                    //字符串表节头
+        break;
+        }
+    }
+    //unsigned char symbol_type ;  //符号表的类型
+    // for(i = 0 ; i < sym_tab_num ; i++ ){
+        // if(ELF64_ST_TYPE(sym_tab[i].st_info) == STT_FUNC){
+        //    func[func_num++] = sym_tab[i];
+        // }
+    // }
+  fclose(file);
 }
+
+
+
+char* find_name(vaddr_t dnpc){
+    
+    for (int i = 0; i < func_num; i++) {
+        Elf64_Addr func_start = func[i].st_value;
+        Elf64_Addr func_end = func_start + func[i].st_size;
+        if ((dnpc >= func_start) && (dnpc <= func_end)) {
+            int symbol_name_index = func[i].st_name;
+            char* symbol_name = (char*)(str_tab.sh_offset + symbol_name_index);
+            return symbol_name;
+        }
+    }
+    return "????";
+}
+
+static int ftrace_num = 0; 
+
+void ftrace_call(vaddr_t pc,vaddr_t dnpc){
+    if(func[0].st_name == 0) return ;
+    for(int i = 0 ; i < ftrace_num ; i++){
+        printf("0x%#lx: ",pc); 
+    char *func_name;
+    func_name = find_name(dnpc);
+    printf(" call [%s@0x%#lx]",func_name,dnpc);
+    ftrace_num++;
+}
+}
+
+void ftrace_ret(vaddr_t pc,vaddr_t dnpc){
+    if(func[0].st_name == 0) return ;
+    for(int i = 0 ; i <= ftrace_num ; i++){
+        printf("0x%#lx: ",pc);
+    }
+    char* func_name = find_name(dnpc);
+    printf(" ret [%s@0x%#lx]",func_name,dnpc);
+    ftrace_num--;
+}
+
+
+
 
 
 
