@@ -96,26 +96,23 @@ char* find_name(vaddr_t dnpc){
 static int ftrace_num = 0; 
 
 extern void ftrace_call(vaddr_t pc,vaddr_t dnpc){
-    if(func[0].st_name == 0) assert(0) ;
+    if(func[0].st_value == 0) assert(0) ;
     for(int i = 0 ; i < ftrace_num ; i++){
         printf("0x%#lx: ",pc); 
     char *func_name;
-    assert(0);
     func_name = find_name(dnpc);
     printf(" call [%s@0x%#lx]",func_name,dnpc);
-    assert(0);
     ftrace_num++;
 }
 }
 
 extern void ftrace_ret(vaddr_t pc,vaddr_t dnpc){
-    if(func[0].st_name == 0) assert(0);
+    if(func[0].st_value == 0) assert(0);
     for(int i = 0 ; i <= ftrace_num ; i++){
         printf("0x%#lx: ",pc);
     }
     char* func_name = find_name(dnpc);
     printf(" ret [%s@0x%#lx]",func_name,dnpc);
-    assert(0);
     ftrace_num--;
 }
 
