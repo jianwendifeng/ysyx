@@ -44,7 +44,7 @@ void init_ftrace(const char *elf_file) {
     fseek(file, elf_header.e_shoff, SEEK_SET);
     for (i = 0; i < elf_header.e_shnum; i++) {                          //e_shnum 此成员保存节标题表中的条目数
         if (fread(&sectionHeader, sizeof(Elf64_Shdr), 1, file) != 1) {  //成功读取，文件指针自动移动到下一个要读取的位置
-            printf("Error reading section header\n");
+            printf("Error reading section header%d\n",i);
             fclose(file);
             assert(0);
         }
