@@ -29,7 +29,7 @@ void init_ftrace(const char *elf_file) {
 
     for(int i = 0 ; i < NumSec ; i++)
     {
-        printf("  [%2d] %-16s  ", i, (char *)(psecheader[i].sh_name + pshstrbuff));
+        printf("elf:  [%2d] %-16s  ", i, (char *)(psecheader[i].sh_name + pshstrbuff));
         switch(psecheader[i].sh_type)
         {
             case SHT_SYMTAB :       //符号表节
