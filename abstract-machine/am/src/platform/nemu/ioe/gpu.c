@@ -3,7 +3,7 @@
 
 #define SYNC_ADDR (VGACTL_ADDR + 4)
 
-#define W 600
+#define W 400
 #define H 300
 
 void __am_gpu_init() {
