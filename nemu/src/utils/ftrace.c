@@ -45,8 +45,7 @@ void init_ftrace(const char *elf_file) {
         if (fread(&sectionHeader, sizeof(Elf64_Shdr), 1, file) != 1) {  //成功读取，文件指针自动移动到下一个要读取的位置
             printf("Error reading section header");
             fclose(file);
-            //assert(0);
-            return;
+            assert(0);
         }
         // 遍历符号表中的每个符号表项
 
