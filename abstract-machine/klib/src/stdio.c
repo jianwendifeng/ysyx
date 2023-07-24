@@ -4,20 +4,29 @@
 #include <stdarg.h>
 
 #if !defined(__ISA_NATIVE__) || defined(__NATIVE_USE_KLIB__)
+
 #define SIZE_MAX_BUF 128
 
-void reverse(char str[],int len,char* out){
+int snprintf(char *out, size_t n, const char *fmt, ...) {
+  panic("Not implemented");
+}
+
+
+void reverse(char* num,int len,char* out){
+
     int start = 0;
-    int end = len -1;
+    int end = len- 1;
+    
     while(start < len){
-        *out++ = str[end] + '0';
+        *out = num[end] +'0';
+        out++;
         start++;
         end--;
     }
 }
 
-static int itoa(int num,char *out,int base){
-    int len = 0;
+int itoa(int num,char *out,int base){
+	int len = 0;
 	char temp[SIZE_MAX_BUF]; 
 	int i = 0;
     if(num == 0) {
@@ -33,6 +42,7 @@ static int itoa(int num,char *out,int base){
 	
 	do{
     	temp[i] = (num % base) ;
+    //	printf("temp[%d]:%d\n",i,temp[i]);
     	i++;
     	num = num / base;
     	len++;
@@ -44,14 +54,13 @@ static int itoa(int num,char *out,int base){
 
 
 int vsnprintf(char *out, size_t n, const char *fmt, va_list ap) {
-     int len = 0;
+    int len = 0;
     while(*fmt != '\0'){
         if(*fmt != '%' ){
         	*out++ = *fmt++; 
         	len++;
         }
         else{
-        	
             switch (*++fmt){
                 case 'd':
                 	fmt++;
@@ -64,62 +73,62 @@ int vsnprintf(char *out, size_t n, const char *fmt, va_list ap) {
                     fmt++;
                     char *tmp_ch = va_arg(ap,char*);
                      while (*tmp_ch != '\0') {
-                        out[len++] = *tmp_ch++;
+                        out[++len] = *tmp_ch++;
                     }
                     break;
                 default:
                     out[len++] = *fmt++;
-                    out[len++] = *fmt++;
+                    //out[len++] = *fmt++;
                     break;
             }
         }
+  
     }
     out[len] = '\0';
     return len;
 }
 
 int vsprintf(char *out, const char *fmt, va_list ap) {
-    int len = 0;
-    len = vsnprintf(out, SIZE_MAX_BUF, fmt, ap);
-    return len;
+    int count = 0;
+    count = vsnprintf(out, SIZE_MAX_BUF, fmt, ap);
+    return count;
 }
 
 int sprintf(char *out, const char *fmt, ...)
-{   
-    for (int i = 0; i < SIZE_MAX_BUF; i++) {
-        out[i] = 0; // 初始化 buf 缓冲区为全零
-    }
-    va_list args;
-    int len = 0;
+{ 
+  int i = 0 ;
+  while (i<SIZE_MAX_BUF){
+    out[i++] = 0;
+  }
+  va_list args;
+  int len = 0;
 	
-    va_start(args,fmt);
-    len = vsprintf(out,fmt,args);
-    va_end(args);
-    return len;
+  va_start(args,fmt);
+  len = vsprintf(out,fmt,args);
+  va_end(args);
+
+  return len;
 }
 
-int snprintf(char *out, size_t n, const char *fmt, ...) {
-  panic("Not implemented");
-}
 
 int printf(const char *fmt, ...) {
-    int len = 0;
-    static char out[SIZE_MAX_BUF];
-
-
-    va_list args;
-    va_start(args,fmt);
-
-    len = vsnprintf(out, SIZE_MAX_BUF, fmt, args);
-
-    int i = 0;
-    while((i<len) && (*out!='\0')){
-        putch(out[i++]);
-    }
-    va_end(args);
-    return 1;
-
+  va_list ap;
+  char buf[SIZE_MAX_BUF];
+   int i = 0 ;
+  while (i<SIZE_MAX_BUF){
+    buf[i++] = 0;
+  }
+  va_start(ap, fmt);
+  int len = vsprintf(buf, fmt, ap);
+  va_end(ap);
+  i=0;
+  while(i < len){
+    putch(buf[i++]);
+  }
+  return 0;
 }
+
+
 
 
 #endif	
