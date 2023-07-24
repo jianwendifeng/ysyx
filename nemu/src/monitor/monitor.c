@@ -118,6 +118,8 @@ void init_monitor(int argc, char *argv[]) {
   /* Open the log file. */
   init_log(log_file);
 
+    /* Initialize ftrace. */
+  init_ftrace(elf_file);
 
   /* Initialize memory. */
   init_mem();
@@ -134,8 +136,7 @@ void init_monitor(int argc, char *argv[]) {
   /* Initialize differential testing. */
   init_difftest(diff_so_file, img_size, difftest_port);
 
-  /* Initialize ftrace. */
-  init_ftrace(elf_file);
+
   
   /* Initialize the simple debugger. */
   init_sdb();
