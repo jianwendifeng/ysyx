@@ -1,6 +1,7 @@
 #include <common.h>
 #include <unistd.h>
 #include <elf.h>
+#include <stdio.h>
 
 
 
