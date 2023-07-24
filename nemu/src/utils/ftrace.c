@@ -46,6 +46,7 @@ void init_ftrace(const char *elf_file) {
             printf("Error reading section header");
             fclose(file);
             //assert(0);
+            return;
         }
         // 遍历符号表中的每个符号表项
 
