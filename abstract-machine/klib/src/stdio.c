@@ -119,6 +119,7 @@ int printf(const char *fmt, ...) {
   while(len < SIZE_MAX_BUF){
     putch(buf[len++]);
   }
+  putch('\0');
   return 0;
 }
 
