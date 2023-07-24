@@ -23,8 +23,8 @@ Elf64_Addr symbol_end ;
 
 void read_symbol_table(FILE *file, Elf64_Shdr symtab_hdr){
     Elf64_Sym* symtab = (Elf64_Sym*)malloc(symtab_hdr.sh_size);
-    assert(fseek(file, symtab_hdr.sh_offset, SEEK_SET) != 1);
-    assert(fread(symtab, symtab_hdr.sh_size, 1, file));
+    fseek(file, symtab_hdr.sh_offset, SEEK_SET) ;
+    if(fread(symtab, symtab_hdr.sh_size, 1, file) != 1) assert(0);
     int num_syms = symtab_hdr.sh_size / sizeof(Elf64_Sym);
     for (int i = 0; i < num_syms; i++) {
         Elf64_Sym* sym = &symtab[i];
