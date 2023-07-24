@@ -114,9 +114,9 @@ int printf(const char *fmt, ...) {
   va_list ap;
   char buf[SIZE_MAX_BUF];
   va_start(ap, fmt);
-  int len = vsnprintf(buf, fmt, ap);
+  int len = vsprintf(buf, fmt, ap);
   va_end(ap);
-  while(len < len){
+  while(len < SIZE_MAX_BUF){
     putch(buf[len++]);
   }
   return 0;
