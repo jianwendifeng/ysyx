@@ -25,14 +25,14 @@ void init_ftrace(const char *elf_file) {
     if(!file){
         printf("Can't open elf_file.\n");
         fclose(file);
-        return ;
+        assert(0);
     }
 
     // 读取 ELF 文件头
     if(fread(&elf_header, sizeof(Elf64_Ehdr), 1, file) != 1){
         printf("Error reading ELF header\n");
         fclose(file);
-        return ;
+        assert(0);
     }
 
     //int sym_tab_num = sym_tab.sh_size / sizeof(Elf64_Sym);          //符号表的数量
@@ -45,7 +45,7 @@ void init_ftrace(const char *elf_file) {
         if (fread(&sectionHeader, sizeof(Elf64_Shdr), 1, file) != 1) {  //成功读取，文件指针自动移动到下一个要读取的位置
             printf("Error reading section header");
             fclose(file);
-            return ;
+            assert(0);
         }
         // 遍历符号表中的每个符号表项
 
@@ -55,7 +55,7 @@ void init_ftrace(const char *elf_file) {
             if (fread(&symbol, sizeof(Elf64_Sym), 1, psym) != 1) {
                 printf("Error reading symbol entry");
                 fclose(file);
-                return ;
+                assert(0);
             }
 
             // 判断符号类型是否为 FUNC，如果是则将该符号保存到 func 数组中
