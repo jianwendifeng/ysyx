@@ -83,7 +83,7 @@ char* find_name(vaddr_t dnpc){
             return  get_string_from_offset(func[i].st_name);
         }
     }
-    return "????";
+    return "s";
 }
 
 static int ftrace_num = 0; 
