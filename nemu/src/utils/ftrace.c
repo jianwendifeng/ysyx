@@ -112,6 +112,7 @@ extern void ftrace_ret(vaddr_t pc,vaddr_t dnpc){
         printf("0x%#lx: ",pc);
     }
     char* func_name = find_name(dnpc);
+    assert(func_name);
     printf(" ret [%s@0x%#lx]",func_name,dnpc);
     ftrace_num--;
 }
