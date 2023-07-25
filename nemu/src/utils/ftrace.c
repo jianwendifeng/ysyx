@@ -23,7 +23,7 @@ Elf64_Addr symbol_end ;
 
 void read_symbol_table(char *data,Elf64_Shdr *_strtab){
     Elf64_Sym *symbols = (Elf64_Sym *)(data + symtab->sh_offset);
-    assert(symbols == NULL);
+    assert(symbols);
     char *strings = data + strtab->sh_offset;
     assert(strings == NULL);
 
