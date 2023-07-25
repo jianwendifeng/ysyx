@@ -100,7 +100,7 @@ extern void ftrace_call(vaddr_t pc,vaddr_t dnpc){
 }
 
 extern void ftrace_ret(vaddr_t pc,vaddr_t dnpc){
-    printf("dnpc:0x%#lx\n\n",dnpc);
+    printf("pc:0x%lx\tdnpc:0x%#lx\n\n",pc,dnpc);
     if(func[0].st_value == 0) assert(0);
     for(int i = 0 ; i <= ftrace_num ; i++){
         printf("0x%#lx: ",pc);
