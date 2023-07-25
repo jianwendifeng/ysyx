@@ -93,11 +93,12 @@ extern void ftrace_call(vaddr_t pc,vaddr_t dnpc){
     printf("call:pc:0x%lx",pc);
     for(int i = 0 ; i < ftrace_num ; i++){
         printf(" "); 
+    }
     char *func_name;
     func_name = find_name(dnpc);
     printf(" call [%s@0x%#lx]\n",func_name,dnpc);
     ftrace_num++;
-}
+
 }
 
 extern void ftrace_ret(vaddr_t pc,vaddr_t dnpc){
