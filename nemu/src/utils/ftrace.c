@@ -5,12 +5,6 @@
 
 #define func_num_max 64
 
-extern uint64_t g_nr_guest_inst;
-
-//Elf64_Ehdr elf_header;
-Elf64_Shdr strtab_hdr, symtab_hdr;
-Elf64_Shdr sectionHeader;
-
 typedef struct
 {
     char name[64];
@@ -19,10 +13,7 @@ typedef struct
 }FunctionInfo;
 
 FunctionInfo func_info[func_num_max];
-
 int func_num = 0;
-Elf64_Addr symbol_start ;
-Elf64_Addr symbol_end ;
 
 // 读取字符串表和符号表的内容
 
@@ -120,7 +111,6 @@ char* find_name(vaddr_t dnpc){
 int ftrace_num = 0; 
 
 extern void ftrace_call(vaddr_t pc,vaddr_t dnpc){
-    //if(func[0].st_info == 0) assert(0) ;
     printf("pc:0x%lx",pc);
     for(int i = 0 ; i < ftrace_num ; i++){
         printf(" "); 
@@ -132,7 +122,6 @@ extern void ftrace_call(vaddr_t pc,vaddr_t dnpc){
 }
 
 extern void ftrace_ret(vaddr_t pc,vaddr_t dnpc){
-    //if(func_info[0].name == 0) assert(0);
     printf("pc:0x%lx",pc);
     for(int i = 0 ; i < ftrace_num ; i++){
         printf(" ");
