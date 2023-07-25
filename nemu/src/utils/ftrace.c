@@ -126,9 +126,8 @@ extern void ftrace_call(vaddr_t pc,vaddr_t dnpc){
     //     printf(" "); 
     // }
     //printf("ftrace_num:%d\n",ftrace_num);
-    char *func_name;
+    char *func_name = find_name(dnpc);
     assert(func_name);
-    func_name = find_name(dnpc);
     printf(" call [%s@0x%#lx]\n",func_name,dnpc);
     ftrace_num++;
 }
