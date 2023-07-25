@@ -90,8 +90,9 @@ static int ftrace_num = 0;
 
 extern void ftrace_call(vaddr_t pc,vaddr_t dnpc){
     if(func[0].st_info == 0) assert(0) ;
+    printf("pc:0x%lx",pc);
     for(int i = 0 ; i < ftrace_num ; i++){
-        printf("0x%#lx: ",pc); 
+        printf(" "); 
     char *func_name;
     func_name = find_name(dnpc);
     printf(" call [%s@0x%#lx]",func_name,dnpc);
@@ -100,10 +101,10 @@ extern void ftrace_call(vaddr_t pc,vaddr_t dnpc){
 }
 
 extern void ftrace_ret(vaddr_t pc,vaddr_t dnpc){
-    printf("pc:0x%lx\tdnpc:0x%#lx\n\n",pc,dnpc);
     if(func[0].st_value == 0) assert(0);
+    printf("pc:0x%lx",pc);
     for(int i = 0 ; i <= ftrace_num ; i++){
-        printf("0x%#lx: ",pc);
+        printf(" ");
     }
     char* func_name = find_name(dnpc);
     assert(func_name);
