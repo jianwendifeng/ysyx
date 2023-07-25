@@ -27,6 +27,7 @@ void read_symbol_table(FILE *file, Elf64_Shdr symtab_hdr){
     for (int i = 0; i < num_syms; i++) {
         Elf64_Sym* sym = &symtab[i];
         if (ELF64_ST_TYPE(sym->st_info) == STT_FUNC) {
+            //printf("SYM%s\n",*sym->s);
             func[func_num++] = *sym;
         } 
     }
@@ -43,6 +44,10 @@ void init_ftrace(const char *elf_file) {
         fclose(file);
         assert(0);
     }
+
+    //60 偏移位置得到节区数量
+    int nNumSec = *(Elf64_Half*)(file + 60);
+    assert(nNumSec);
 
     Elf64_Ehdr elf_header;
     if(fread(&elf_header, sizeof(Elf64_Ehdr), 1, file) != 1 ) assert(0);
