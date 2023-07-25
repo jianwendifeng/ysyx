@@ -6,7 +6,9 @@
 #define func_num_max 64
 
 extern uint64_t g_nr_guest_inst;
-
+// 获取字符串表和符号表节头表项
+Elf64_Shdr *symtab = NULL;
+Elf64_Shdr *strtab = NULL;
 
 //Elf64_Ehdr elf_header;
 Elf64_Shdr strtab_hdr, symtab_hdr;
@@ -19,61 +21,117 @@ Elf64_Addr symbol_end ;
 
 // 读取字符串表和符号表的内容
 
-void read_symbol_table(FILE *file, Elf64_Shdr symtab_hdr){
-    Elf64_Sym* symtab = (Elf64_Sym*)malloc(symtab_hdr.sh_size);
-    fseek(file, symtab_hdr.sh_offset, SEEK_SET) ;
-    if(fread(symtab, symtab_hdr.sh_size, 1, file) != 1) assert(0);
-    int num_syms = symtab_hdr.sh_size / sizeof(Elf64_Sym);
-    for (int i = 0; i < num_syms; i++) {
-        Elf64_Sym* sym = &symtab[i];
-        if (ELF64_ST_TYPE(sym->st_info) == STT_FUNC) {
-            //printf("SYM%s\n",*sym->s);
-            func[func_num++] = *sym;
-        } 
+void read_symbol_table(char *data,Elf64_Shdr *_strtab){
+    Elf64_Sym *symbols = (Elf64_Sym *)(data + symtab->sh_offset);
+    assert(symbols == NULL);
+    char *strings = data + strtab->sh_offset;
+    assert(strings == NULL);
+
+    int num_symbols = symtab->sh_size / sizeof(Elf64_Sym);
+    assert(num_symbols);
+
+    for(int i = 0; i < num_symbols; i ++){
+        unsigned char type = ELF64_ST_TYPE(symbols[i].st_info);
+        if(type ==  STT_FUNC){ //符号表中func的项
+            func[func_num++] = *symbols;
+        }
     }
-    free(symtab);
 }
 
-// void read_string_table(FILE *file, Elf64_Shdr strtab_hdr){
-// }
-
-void init_ftrace(const char *elf_file) {
+void init_ftrace(const char* elf_file){
     FILE *file = fopen(elf_file,"rb");
-    if(!file){
+    if(file == NULL){
         printf("Can't open elf_file.\n");
-        fclose(file);
         assert(0);
     }
 
-    //60 偏移位置得到节区数量
-    int nNumSec = *(Elf64_Half*)(elf_file + 60);
-    printf("nNumSec:%d\n",nNumSec);
-    assert(nNumSec);
+    // 获取文件大小，读取整个 ELF 文件到内存中
+    fseek(file, 0, SEEK_END);   //指针移动到文件尾部
+    long size = ftell(file);    //移动到文件尾部，得到ftell会返回文件的大小，字节为单位
+    fseek(file, 0, SEEK_SET);   //将指针移回文件的开头
 
-    Elf64_Ehdr elf_header;
-    if(fread(&elf_header, sizeof(Elf64_Ehdr), 1, file) != 1 ) assert(0);
-    //assert(fread(&elf_header, sizeof(Elf64_Ehdr), 1, file));
+    char *data = (char *)malloc(size);  //内存块用于存储整个 ELF 文件的内容
+    if (fread(data, 1, size, file) != size) {
+        printf("Failed to read the file: %s\n", elf_file);
+        fclose(file);
+        free(data);
+        assert(0);
+    }
+    fclose(file);
 
-    fseek(file, elf_header.e_shoff, SEEK_SET);
-    for (int i = 0; i < elf_header.e_shnum; i++) {
-        Elf64_Shdr section_hdr;
-        if(fread(&section_hdr, sizeof(Elf64_Shdr), 1, file) !=1 ) assert(0);
-        //assert(fread(&section_hdr, sizeof(Elf64_Shdr), 1, file));
-
-        if (section_hdr.sh_type == SHT_STRTAB ) {
-            strtab_hdr = section_hdr;
-            //assert(strtab_hdr);
+    // 获取 ELF 文件头
+    Elf64_Ehdr *elf_header = (Elf64_Ehdr *)data;
+    //ELF 文件的魔数，它们的值分别是：0x7F、'E'、'L' 和 'F'，用来判断elf文件是否有效
+    if (elf_header->e_ident[EI_MAG0] != ELFMAG0 || elf_header->e_ident[EI_MAG1] != ELFMAG1 || elf_header->e_ident[EI_MAG2] != ELFMAG2 || elf_header->e_ident[EI_MAG3] != ELFMAG3) 
+        { 
+            printf("Invalid ELF file: %s\n", elf_file);
+            free(data);
+            assert(0);
         }
-        else if (section_hdr.sh_type == SHT_SYMTAB) {
-            symtab_hdr = section_hdr;
-            //assert(symtab_hdr);
+
+     // 获取节头表
+    Elf64_Shdr *sections = (Elf64_Shdr *)(data + elf_header->e_shoff);
+
+    // 获取字符串表和符号表节头表项
+    Elf64_Shdr *symtab = NULL;
+    Elf64_Shdr *strtab = NULL;
+    for (int i = 0; i < elf_header->e_shnum; i++) {
+        if (sections[i].sh_type == SHT_SYMTAB) {
+            symtab = &sections[i];
+        } else if (sections[i].sh_type == SHT_STRTAB) {
+            strtab = &sections[i];
+        }
+
+        if (symtab != NULL && strtab != NULL) {
+            break;
         }
     }
-    // 读取字符串表和符号表的内容
-    //read_string_table(file, strtab_hdr);
-    read_symbol_table(file, symtab_hdr);
-    fclose(file);
+
+    if (symtab == NULL || strtab == NULL) {
+        printf("Symbol table or string table not found in the ELF file: %s\n", elf_file);
+        free(data);
+        assert(0);
+    }
+    read_symbol_table(data, symtab);
 }
+
+// void init_ftrace(const char *elf_file) {
+//     FILE *file = fopen(elf_file,"rb");
+//     if(!file){
+//         printf("Can't open elf_file.\n");
+//         fclose(file);
+//         assert(0);
+//     }
+
+//     //60 偏移位置得到节区数量
+//     int nNumSec = *(Elf64_Half*)(elf_file + 60);
+//     printf("nNumSec:%d\n",nNumSec);
+//     assert(nNumSec);
+
+//     Elf64_Ehdr elf_header;
+//     if(fread(&elf_header, sizeof(Elf64_Ehdr), 1, file) != 1 ) assert(0);
+//     //assert(fread(&elf_header, sizeof(Elf64_Ehdr), 1, file));
+
+//     fseek(file, elf_header.e_shoff, SEEK_SET);
+//     for (int i = 0; i < elf_header.e_shnum; i++) {
+//         Elf64_Shdr section_hdr;
+//         if(fread(&section_hdr, sizeof(Elf64_Shdr), 1, file) !=1 ) assert(0);
+//         //assert(fread(&section_hdr, sizeof(Elf64_Shdr), 1, file));
+
+//         if (section_hdr.sh_type == SHT_STRTAB ) {
+//             strtab_hdr = section_hdr;
+//             //assert(strtab_hdr);
+//         }
+//         else if (section_hdr.sh_type == SHT_SYMTAB) {
+//             symtab_hdr = section_hdr;
+//             //assert(symtab_hdr);
+//         }
+//     }
+//     // 读取字符串表和符号表的内容
+//     //read_string_table(file, strtab_hdr);
+//     read_symbol_table(file, symtab_hdr);
+//     fclose(file);
+// }
 
 char* get_string_from_offset(Elf64_Xword offset) {
     return (char*)(strtab_hdr.sh_offset + offset);
