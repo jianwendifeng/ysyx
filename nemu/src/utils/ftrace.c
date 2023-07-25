@@ -80,10 +80,11 @@ char* find_name(vaddr_t dnpc){
         Elf64_Addr func_start = func[i].st_value;
         Elf64_Addr func_end = func_start + func[i].st_size;
         if ((dnpc >= func_start) && (dnpc <= func_end)) {
-            return  get_string_from_offset(func[i].st_name);
+            //return  get_string_from_offset(func[i].st_name);
+            return "find";
         }
     }
-    return "s";
+    return "????";
 }
 
 static int ftrace_num = 0; 
