@@ -3,8 +3,6 @@
 #include <elf.h>
 #include <stdio.h>
 
-
-
 #define func_num_max 64
 
 extern uint64_t g_nr_guest_inst;
@@ -35,13 +33,8 @@ void read_symbol_table(FILE *file, Elf64_Shdr symtab_hdr){
     free(symtab);
 }
 
-void read_string_table(FILE *file, Elf64_Shdr strtab_hdr){
-    
-
-}
-
-
-
+// void read_string_table(FILE *file, Elf64_Shdr strtab_hdr){
+// }
 
 void init_ftrace(const char *elf_file) {
     FILE *file = fopen(elf_file,"rb");
