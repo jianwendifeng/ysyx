@@ -47,6 +47,7 @@ void init_ftrace(const char *elf_file) {
 
     //60 偏移位置得到节区数量
     int nNumSec = *(Elf64_Half*)(elf_file + 60);
+    printf("nNumSec:%d\n",nNumSec);
     assert(nNumSec);
 
     Elf64_Ehdr elf_header;
