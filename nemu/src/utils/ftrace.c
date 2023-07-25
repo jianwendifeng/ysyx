@@ -117,7 +117,7 @@ extern void ftrace_call(vaddr_t pc,vaddr_t dnpc){
     }
     char *func_name = find_name(dnpc);
     assert(func_name);
-    printf(" call [%s@0x%#lx]\n",func_name,dnpc);
+    printf(" call [%s@0x%#lx]\n\n",func_name,dnpc);
     ftrace_num++;
 }
 
@@ -128,7 +128,7 @@ extern void ftrace_ret(vaddr_t pc,vaddr_t dnpc){
     }
     char* func_name = find_name(dnpc);
     assert(func_name);
-    printf(" ret [%s@0x]\n",func_name);
+    printf(" ret [%s@0x]\n\n",func_name);
     ftrace_num--;
 }
 
