@@ -6,35 +6,43 @@
 #define func_num_max 64
 
 extern uint64_t g_nr_guest_inst;
-// 获取字符串表和符号表节头表项
-Elf64_Shdr *symtab = NULL;
-Elf64_Shdr *strtab = NULL;
 
 //Elf64_Ehdr elf_header;
 Elf64_Shdr strtab_hdr, symtab_hdr;
 Elf64_Shdr sectionHeader;
 
-Elf64_Sym  func[func_num_max];
+typedef struct
+{
+    char name[64];
+    Elf64_Addr start;
+    Elf64_Addr end;
+}FunctionInfo;
+
+FunctionInfo func_info[func_num_max];
+
 int func_num = 0;
 Elf64_Addr symbol_start ;
 Elf64_Addr symbol_end ;
 
 // 读取字符串表和符号表的内容
 
-void read_symbol_table(char *data,Elf64_Shdr *_strtab){
+void read_symbol_table(char *data,Elf64_Shdr *strtab,Elf64_Shdr *symtab){
     Elf64_Sym *symbols = (Elf64_Sym *)(data + symtab->sh_offset);
-    //assert(symbols);
+    assert(symbols);
+
     char *strings = data + strtab->sh_offset;
-    strtab = (Elf64_Shdr*)strings;
-    assert(strings == NULL);
+    assert(strings);
 
     int num_symbols = symtab->sh_size / sizeof(Elf64_Sym);
     assert(num_symbols);
 
-    for(int i = 0; i < num_symbols; i ++){
+    for(int i = 0; i < num_symbols; i++){
         unsigned char type = ELF64_ST_TYPE(symbols[i].st_info);
         if(type ==  STT_FUNC){ //符号表中func的项
-            func[func_num++] = *symbols;
+            snprintf(func_info[func_num].name, sizeof(func_info[func_num].name), "%s", &strings[symbols[i].st_name]);
+                func_info[func_num].start = symbols[i].st_value;
+                func_info[func_num].end = symbols[i].st_value + symbols[i].st_size;
+                func_num++;
         }
     }
 }
@@ -93,83 +101,40 @@ void init_ftrace(const char* elf_file){
         free(data);
         assert(0);
     }
-    read_symbol_table(data, symtab);
+    read_symbol_table(data,strtab,symtab);
+    free(data);
 }
-
-// void init_ftrace(const char *elf_file) {
-//     FILE *file = fopen(elf_file,"rb");
-//     if(!file){
-//         printf("Can't open elf_file.\n");
-//         fclose(file);
-//         assert(0);
-//     }
-
-//     //60 偏移位置得到节区数量
-//     int nNumSec = *(Elf64_Half*)(elf_file + 60);
-//     printf("nNumSec:%d\n",nNumSec);
-//     assert(nNumSec);
-
-//     Elf64_Ehdr elf_header;
-//     if(fread(&elf_header, sizeof(Elf64_Ehdr), 1, file) != 1 ) assert(0);
-//     //assert(fread(&elf_header, sizeof(Elf64_Ehdr), 1, file));
-
-//     fseek(file, elf_header.e_shoff, SEEK_SET);
-//     for (int i = 0; i < elf_header.e_shnum; i++) {
-//         Elf64_Shdr section_hdr;
-//         if(fread(&section_hdr, sizeof(Elf64_Shdr), 1, file) !=1 ) assert(0);
-//         //assert(fread(&section_hdr, sizeof(Elf64_Shdr), 1, file));
-
-//         if (section_hdr.sh_type == SHT_STRTAB ) {
-//             strtab_hdr = section_hdr;
-//             //assert(strtab_hdr);
-//         }
-//         else if (section_hdr.sh_type == SHT_SYMTAB) {
-//             symtab_hdr = section_hdr;
-//             //assert(symtab_hdr);
-//         }
-//     }
-//     // 读取字符串表和符号表的内容
-//     //read_string_table(file, strtab_hdr);
-//     read_symbol_table(file, symtab_hdr);
-//     fclose(file);
-// }
-
-char* get_string_from_offset(Elf64_Xword offset) {
-    return (char*)(strtab_hdr.sh_offset + offset);
-}
-
 
 char* find_name(vaddr_t dnpc){
     
     for (int i = 0; i < func_num; i++) {
-        Elf64_Addr func_start = func[i].st_value;
-        Elf64_Addr func_end = func_start + func[i].st_size;
+        Elf64_Addr func_start = func_info[i].start;
+        Elf64_Addr func_end = func_info[i].end;
         if ((dnpc >= func_start) && (dnpc <= func_end)) {
-            //return  get_string_from_offset(func[i].st_name);
-            return "find";
+            return func_info[i].name;
         }
     }
     return "????";
 }
 
-static int ftrace_num = 0; 
+int ftrace_num = 0; 
 
 extern void ftrace_call(vaddr_t pc,vaddr_t dnpc){
-    if(func[0].st_info == 0) assert(0) ;
+    //if(func[0].st_info == 0) assert(0) ;
     printf("call:pc:0x%lx",pc);
     // for(int i = 0 ; i < ftrace_num ; i++){
     //     printf(" "); 
     // }
     //printf("ftrace_num:%d\n",ftrace_num);
     char *func_name;
+    assert(func_name);
     func_name = find_name(dnpc);
     printf(" call [%s@0x%#lx]\n",func_name,dnpc);
     ftrace_num++;
-
 }
 
 extern void ftrace_ret(vaddr_t pc,vaddr_t dnpc){
-    if(func[0].st_value == 0) assert(0);
+    //if(func_info[0].name == 0) assert(0);
     printf("ret:pc:0x%lx",pc);
     // for(int i = 0 ; i < ftrace_num ; i++){
     //     printf(" ");
