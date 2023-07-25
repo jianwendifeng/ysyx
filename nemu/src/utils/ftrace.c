@@ -23,8 +23,9 @@ Elf64_Addr symbol_end ;
 
 void read_symbol_table(char *data,Elf64_Shdr *_strtab){
     Elf64_Sym *symbols = (Elf64_Sym *)(data + symtab->sh_offset);
-    assert(symbols);
+    //assert(symbols);
     char *strings = data + strtab->sh_offset;
+    strtab = (Elf64_Shdr*)strings;
     assert(strings == NULL);
 
     int num_symbols = symtab->sh_size / sizeof(Elf64_Sym);
