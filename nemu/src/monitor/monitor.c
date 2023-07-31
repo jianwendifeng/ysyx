@@ -117,10 +117,10 @@ void init_monitor(int argc, char *argv[]) {
   init_log(log_file);
 
     /* Initialize ftrace. */
-  init_ftrace(elf_file);
+  IFDEF(MTRACE_COND, init_ftrace(elf_file));
 
   /* Initialize memory. */
-  IFDEF(MTRACE_COND, init_mem());
+  init_mem();
 
   /* Initialize devices. */
   IFDEF(CONFIG_DEVICE, init_device());
