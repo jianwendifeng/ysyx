@@ -149,7 +149,7 @@ config ITRACE_COND
   default "true"
 
 config MTRACE_COND
-  depends on TRACE
+
   bool "MTRACE"
   default "true"
 
