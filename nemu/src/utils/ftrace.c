@@ -3,7 +3,7 @@
 #include <elf.h>
 #include <stdio.h>
 
-#ifdef MTRACE_COND
+#ifdef MTRACE
 
 #define func_num_max 64
 

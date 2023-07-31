@@ -1,6 +1,7 @@
-// import chisel3._
+import java.lang.reflect.Parameter
+import chisel3._
 
-// //ALU 
+//ALU 
 // class ALUIo(implicit p: Parameters) extends CoreBundle()(p) {
 //     val A       = Input(UInt(xlen.W))
 //     val B       = Input(UInt(xlen.W))
@@ -32,3 +33,16 @@
 //     io.out := out
 //     io.sum := sum
 // }
+
+class ALUIO extends Bundle {
+    val A = Input(UInt(64.W))
+    val B = Input(UInt(64.W))
+    val alu_op = Input(UInt(4.W))
+    val out = Output(UInt(64.W))
+}
+
+class ALU extends ALUIO {
+    val io = IO(new ALUIO() )
+
+    val out = Mux(io.alu_op())
+}
