@@ -157,6 +157,7 @@ int isa_exec_once(Decode *s) {
 
   return decode_exec(s);
 }
+
 #ifdef MTRACE_COND
 void ftrace_func(int rd,vaddr_t pc , vaddr_t dnpc){
 	

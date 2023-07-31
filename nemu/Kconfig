@@ -145,17 +145,19 @@ config ITRACE
   default y
 
 config ITRACE_COND
+  depends on TRACE
   bool "ITRACE"
-  default n
+  default 0
 
 config MTRACE_COND
+  depends on TRACE
   bool "MTRACE"
-  default n
+  default 0
 
 config DIFFTEST
   depends on TARGET_NATIVE_ELF
   bool "Enable differential testing"
-  default n
+  default 0
   help
     Enable differential testing with a reference design.
     Note that this will significantly reduce the performance of NEMU.
