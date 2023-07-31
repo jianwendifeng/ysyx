@@ -43,9 +43,8 @@ class Decoder(xlen: Int) extends Module{
     io.alu_op := op
     io.rd := rd
     io.immR := immr
-    val add_op = 0110011.b
 
-    ren := Mux(inst_op & add_op.B,true, false)
+    ren := Mux(inst_op && "b0110011".U,true, false)
 
     val regFileInst = Module(new rv64.RegFile(xlen))
     

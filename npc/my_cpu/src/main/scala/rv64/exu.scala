@@ -22,7 +22,7 @@ class Exu extends Module {
     val rd = RegInit(0.U(5.W))
     rd = io.in_rd
 
-    result := Mux(io.op && 0b0110011.B, io.data1 + io.data2, 0.U)
+    result := Mux(io.op && "b0110011".U, io.data1 + io.data2, 0.U)
 
     io.out_rd := rd
     io.data := result
