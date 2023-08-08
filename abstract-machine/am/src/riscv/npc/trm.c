@@ -18,7 +18,6 @@ void putch(char ch) {
 }
 
 void halt(int code) {
-  printf("Exit with code = %d\n", code);
   while (1);
 }
 
