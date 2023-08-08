@@ -6,55 +6,38 @@ import chisel3.stage._
 
 import rv64._
 
-// class top extends Module {
-//   val io = IO(new Bundle {
-//     val raddr1 = Input(UInt(5.W))
-//     val raddr2 = Input(UInt(5.W))
-//     val rdata1 = Output(UInt(5.W))
-//     val rdata2 = Output(UInt(5.W))
-//     val wen = Input(Bool())
-//     val waddr = Input(UInt(5.W))
-//     val wdata = Input(UInt(5.W))
-//   })
-  
-  
-
-//   val regfile = Module(new RegFile(64))
-
-//   regfile.io.raddr1 := io.raddr1
-//   regfile.io.raddr2 := io.raddr2
-//   io.rdata1 := regfile.io.rdata1
-//   io.rdata2 := regfile.io.rdata2
-//   regfile.io.wen := io.wen
-//   regfile.io.waddr := io.waddr
-//   regfile.io.wdata := io.wdata
-
-// }
-
-// object topMain extends App {
-//   (new ChiselStage).emitVerilog(new top, args)
-// }
-
 class top extends Module {
-   val io = IO(new Bundle {
-    val input = Input(UInt32.W)
-    val output = Output(UInt32.W)
-   })
+  val io = IO(new Bundle {
+    val inst = Input(UInt(32.W)) // 外部指令输入，如verilator
+    val pc = Output(UInt(32.W))
+    val exit = Output(UInt(32.W))
+    val idu_op = Output(UInt(32.W))
+    val exu_data = Output(UInt(32.W))
+    val exu_data1 = Output(UInt(32.W))
+    val exu_data2 = Output(UInt(32.W))
+    val mem_data = Output(UInt(32.W))
+    val wbu_data = Output(UInt(32.W))
+    val reg_wdata = Output(UInt(32.W))
+  })
 
-   val ifstage = Module(new PC)
-   val idstage = Module(new Decoder)
-   val exstage = Module(new Exu)
-   val memstage = Module(new Memory)
-   val wbstage = Module(new WB)
+  val core = Module(new Core())
+  val imem = Module(new Imem)
 
+  // core.io.inst := Mux(false.B, io.inst, imem.io.imem.inst) //verilator和imem的指令输入选择，imem写入固定数据
+  core.io.inst := imem.io.imem.inst
+  core.io.pc <> imem.io.imem.addr
 
-   ifstate.io.input <> io.input
-   ifstage.io.output <> idstage.io.input
-   idstage.io.output <> exstage.io.input
-   memstage.io.output <> wbstage.io.input
-   
+  io.pc := core.io.pc
+  io.exit := core.io.exit
+  io.idu_op := core.io.idu_op
+  io.exu_data := core.io.exu_data
+  io.exu_data1 := core.io.exu_data1
+  io.exu_data2 := core.io.exu_data2
+  io.mem_data := core.io.mem_data
+  io.wbu_data := core.io.wbu_data
+  io.reg_wdata := core.io.reg_wdata
 }
 
-object topMain extends APP {
-  (new ChiselStage).emitVerilog(new top, args)
+object topMain extends App{
+  (new ChiselStage).emitVerilog(new top(), args)
 }

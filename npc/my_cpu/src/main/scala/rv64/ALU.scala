@@ -1,58 +1,41 @@
 package rv64
 
 import chisel3._
-import chisel3.tuil._
+import chisel3.util._
+import ALU_Signals._
 
-object Alu {
-    val ALU_ADD = 0.U(4.W)
-    val ALU_SUB = 1.U(4.W)
-    val ALU_AND = 2.U(4.W)
-    val ALU_OR = 3.U(4.W)
-    val ALU_XOR = 4.U(4.W)
-    val ALU_SLL = 5.U(4.W)
-    val ALU_SLT = 6.U(4.W)
-    val ALU_SLTU = 7.U(4.W)
-    val ALU_SRA = 8.U(4.W)
-    val ALU_SRL = 9.U(4.W)
-    
-    val ALU_XXX = 15.U(4.W)
+object ALU_Signals{
+    val ALU_ADD  = 0.U(4.W)
+    val ALU_SUB  = 1.U(4.W)
+    val ALU_OR   = 2.U(4.W)
+    val ALU_AND  = 3.U(4.W)
+    val ALU_XOR  = 4.U(4.W)
+    val ALU_SLL  = 5.U(4.W)
+    val ALU_SRL  = 6.U(4.W)
+    val ALU_SRA  = 7.U(4.W)
+    val ALU_SLT  = 8.U(4.W)
+    val ALU_SLTU = 9.U(4.W)
+  
+    val ALU_XXX  = 15.U(4.W)
 }
 
-class AluIO(width: Int) extends Bundle {
-    val alu_op = Input(UInt(4.W))
-    val A = Input(UInt(width.W))
-    val B = Input(UInt(width.W))
-    val out = Output(UInt(width.W))
-    val sum = Output(UInt(width.W))
-}
 
-trait Alu extends Module {
-    def width: Int
-    val io: AluIO
-}
 
-calss AluSimple(val width: Int) extends Alu {
-    val io = Io(new AluIO(width))
+class ALU(Xlen: Int) extends Module {
+    val io = IO(new ALUIO(Xlen))
+    val shamt = io.b(4,0).asUInt
 
-    val shamt = io.B(4, 0).asUInt
+    io.result := MuxLookup(io.ctr_signals_in.alu_sel, 0.U, Array(
+        ALU_ADD     -> (io.a + io.b),
+        ALU_SUB     -> (io.a - io.b),
+        ALU_OR      -> (io.a | io.b),
+        ALU_AND     -> (io.a & io.b),
+        ALU_XOR     -> (io.a ^ io.b),
+        ALU_SLL     -> (io.a << shamt),
+        ALU_SRL     -> (io.a >> shamt),
+        ALU_SRA     -> (io.a.asSInt >> shamt).asUInt,
+        ALU_SLT     -> (io.a.asSInt < io.b.asSInt),
+        ALU_SLTU    -> (io.a < io.b)
+    ))
 
-    io.out := MuxLookup(
-        io.alu_op,
-        io.B,
-        Seq(
-            ALU_ADD -> (io.A + io.B)
-            ALU_SUB -> (io.A - io.B)
-            ALU_AND -> (io.A & io.B)
-            ALU_OP  -> (io.A | io.B)
-            ALU_XOR -> (io.A ^ io.B)
-            ALU_SLL -> (io.A << shamt)
-            ALU_SLT -> (io.A.asSInt  < io.B.asSInt)
-            ALU_SLTU -> (io.A < io.B)
-            ALU_SRA -> (io.A.asSInt >> shamt).asSInt
-            ALU_SRL -> (io.A.asSInt >> shanmt)
-
-        )
-    )
-
-    io.sum := io.A + Mux(io.alu_op(0), -io.B, io.B)
 }

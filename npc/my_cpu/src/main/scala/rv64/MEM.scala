@@ -1,19 +1,23 @@
-package rv64.ifu
+package rv64
 
 import chisel3._
+import chisel3.util._
 
-class ImemIO extends Bundle {
-    val ren = Input(Bool())
-    val raddr = Input(UInt(32.W))
-    val rdata = Output(UInt(64.W))
-}
+class MEM(Xlen: Int) extends Module {
+    val io = IO(new MEMIO(Xlen))
+    val ctr_signals = RegNext(io.ctr_signals_in)
+    io.ctr_signals_out := ctr_signals
 
-class Memory extends Module {
-    val io = IO(new Bundle{
-        val imen = new ImemIO()
-    })
+    val result = RegInit(0.U(Xlen.W))
+    val rd = RegInit(false.B)
+    // val wen = RegInit(false.B)
 
-    val Imem = Mem(4096, UInt(64.W))
+    rd := io.rd_in
+    // wen := io.ctr_signals_in.wb_en
 
-    io.rdata := Mux(io.ren, Imem.read(io.raddr), 0.U)
+    io.rd_out := rd
+    // io.wen_out := wen
+
+    result := io.result_in
+    io.result_out := result
 }

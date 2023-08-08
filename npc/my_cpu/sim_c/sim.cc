@@ -64,32 +64,43 @@ void reset(int n) {
 
 void sim_main(int argc, char *argv[]) {
 	sim_init(argc, argv);
-	reset(10);
+	reset(1);
 
 	/* main simulation*/
-	int sim_time = 0;
-	int seq_ptr = 0;
-	int seq[] = {1, 1, 1, 0, 1, 1, 0, 1, 0, 1, 1, 0, 1, 0};
+	 int sim_time = 0;
+	// int seq_ptr = 0;
+	// int seq[] = {1, 1, 1, 0, 1, 1, 0, 1, 0, 1, 1, 0, 1, 0};
+	//long int inst[] = { 0x008000EF,0x00110113,0x000101B3,0xffffffff};
+	uint32_t inst[] = 
+		{
+			0xff010113,          	//addi	sp,sp,-16
+			0,0,0,0,
+			0x0009e117,          	//auipc	sp,0x9e
+			0,0,0,0,
+			0x40e50533,          	//sub	a0,a0,a4
+			0,0,0,0,
+			0x00240413,         	//addi	s0,s0,2
+			0,0,0,0,
+			0x00868693,          	//addi	a3,a3,8
+			0,0,0,0,
+			0x00010413,
+			0x00530313,
+			0x00a40413,
+			0x000123b7,
+			0,0,0,0,
+			0x000ff06f,
+			0,0,0,0,
+			0x020202e7,
+			0,0,0,0
 
+		};	//指令
 	/* main loop */
-	while (!contextp->gotFinish() && (sim_time <= 20)) {
-		seq_ptr = (seq_ptr + 1) % 14;
-		top->io_wdata = seq[seq_ptr];
-		top->io_waddr = 4*seq_ptr;
-		top->io_wen = 1;
-		if(seq_ptr > 4){
-			top->io_raddr1 = 4*seq_ptr - 16;
-			top->io_raddr2 = 4*seq_ptr - 12;
-		}
+	while (!contextp->gotFinish() && (sim_time <= 128)) {
 		single_cycle();
-		// cout << "in: " << seq[seq_ptr] << "\t";	<<endl;
-		// cout << "out1: " << bitset<1>(top->io_rdata1); <<endl;
-		// cout << "out2: " << bitset<1>(top->io_rdata2); <<endl;
-		printf("io_wdata:%d\t",top->io_wdata);
-		printf("io_rdata1:%d\t",top->io_rdata1);
-		printf("io_rdata2:%d\n",top->io_rdata2);
-
-		sim_time++;
+		//io_inst端口输入指令
+		int num = (sim_time % 125);
+		top->io_inst = inst[num];
+		  sim_time++;
 	}
 
 	sim_exit();
