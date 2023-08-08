@@ -17,7 +17,7 @@ endif
 ifeq ($(findstring $(MAKECMDGOALS),clean|clean-all|html),)
 
 ### Print build info message
-$(info # Building $(NAME)1-$(MAKECMDGOALS) [$(ARCH)])
+$(info # Building $(NAME)-$(MAKECMDGOALS) [$(ARCH)]111)
 
 ### Check: environment variable `$AM_HOME` looks sane
 ifeq ($(wildcard $(AM_HOME)/am/include/am.h),)
