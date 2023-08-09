@@ -1,12 +1,9 @@
-package top
-
+import circt.stage._
 import chisel3._
 import chisel3.util._
 import chisel3.stage._
 
-import rv64._
-
-class top extends Module {
+class TOP extends Module {
   val io = IO(new Bundle {
     val inst = Input(UInt(32.W)) // 外部指令输入，如verilator
     val pc = Output(UInt(32.W))
@@ -39,5 +36,5 @@ class top extends Module {
 }
 
 object topMain extends App{
-  (new ChiselStage).emitVerilog(new top(), args)
+  (new ChiselStage).emitVerilog(new TOP(), args)
 }
