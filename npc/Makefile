@@ -42,6 +42,7 @@ checkformat:
 
 clean:
 	-rm -rf $(BUILD_DIR)
+	-rm -rf $(BUILD_DIR) logs
 
 .PHONY: test verilog help compile bsp reformat checkformat clean
 
@@ -92,8 +93,8 @@ endif
 	
 srun: sim run
 
-clean:
-	-rm -rf $(BUILD_DIR) logs
+# clean:
+# 	-rm -rf $(BUILD_DIR) logs
 
 clean_mill:
 	-rm -rf out
