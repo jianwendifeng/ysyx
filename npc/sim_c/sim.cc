@@ -1,6 +1,5 @@
 #include <iostream>
 #include <bitset>
-
 #include <verilated.h>
 #include "Vtop.h"
 #include <stdio.h>
