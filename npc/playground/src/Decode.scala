@@ -4,8 +4,6 @@ import chisel3.util._
 import ALU_Signals._
 import Instructions._
 
-
-
 object Decode {
     // //PC_SEL
     // val PC_SEL_LEN = 2

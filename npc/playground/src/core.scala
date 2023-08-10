@@ -42,8 +42,6 @@ class Core extends Module {
     idu.io.a <> exu.io.a
     idu.io.b <> exu.io.b
 
-    
-
     exu.io.rd_out <> mem.io.rd_in
     exu.io.data <> mem.io.result_in
 

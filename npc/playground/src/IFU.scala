@@ -27,5 +27,3 @@ class IFU(Xlen: Int) extends Module {
   io.pc_out := pc
   io.pc_next := pc
 }
-
-

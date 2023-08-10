@@ -62,5 +62,3 @@ class IDU(Xlen: Int) extends Module{
 
 }
 
-
-

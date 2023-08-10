@@ -21,7 +21,6 @@ class EXU(Xlen: Int) extends Module {
     alu.io.b <> io.b
     alu.io.result <> alu_result
 
-
     rd := io.rd_in
     io.rd_out := rd
     io.data := alu_result

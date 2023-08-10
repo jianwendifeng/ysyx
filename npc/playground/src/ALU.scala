@@ -15,7 +15,6 @@ object ALU_Signals{
     val ALU_SRA  = 7.U(4.W)
     val ALU_SLT  = 8.U(4.W)
     val ALU_SLTU = 9.U(4.W)
-  
     val ALU_XXX  = 15.U(4.W)
 }
 
