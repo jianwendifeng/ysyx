@@ -18,11 +18,18 @@
 #include <readline/readline.h>
 #include <readline/history.h>
 #include "sdb.h"
+#include <memory/vaddr.h>
 
 static int is_batch_mode = false;
 
 void init_regex();
 void init_wp_pool();
+word_t expr();
+void list_watchpoint();
+bool delete_watchpoint(int no);
+void scan_watchpoint(vaddr_t pc);
+int set_watchpoint(char *e);
+int test_expr();
 
 /* We use the `readline' library to provide more flexibility to read from stdin. */
 static char* rl_gets() {
@@ -35,7 +42,7 @@ static char* rl_gets() {
 
   line_read = readline("(nemu) ");
 
-  if (line_read && *line_read) {
+  if  (line_read && *line_read) {
     add_history(line_read);
   }
 
@@ -52,6 +59,137 @@ static int cmd_q(char *args) {
   return -1;
 }
 
+static int cmd_si(char *args) {
+	char *arg = strtok(NULL, " ");
+	int step;
+	if(args == NULL) step = 1;
+	else sscanf(arg,"%d",&step);
+  cpu_exec(step);
+	return 0;
+}
+
+static int cmd_info(char *args) {
+	char *arg = strtok(NULL," ");
+	if(arg == NULL)
+		return 0;
+	else if(strcmp(arg,"r") == 0)
+		isa_reg_display();
+	else if(strcmp(arg,"w") == 0)
+    list_watchpoint();
+    //printf("info w haven't write");
+	else {  
+		printf("You should write info f/w");
+	}
+	return 0;
+}
+
+static int cmd_x(char *args){
+	if (args == NULL) {
+        printf("Wrong Command!\n");
+        return 0;
+    }
+	int len,i;
+  uint32_t addr;
+	sscanf(args,"%d %x",&len,&addr);
+  if((addr < 0x8000000) || (addr > 0x8fffffff)){
+    printf("\n-----\nOut of pmem at addr:%x\n-----\n",addr);
+    return 0;
+  }
+  // printf("\n-----\naddr:%x\n-----\n",addr);
+
+	for(i= 0;i<len;i++ ) {
+		printf("0x%x\t0x%0x\n",addr,vaddr_read(addr,4));
+		addr+=4;
+	}
+
+	return 0;
+}
+
+static int cmd_p(char *args){
+	if(args != NULL){ 
+		bool success;
+		word_t p_temp=expr(args,&success);
+		if(success){  
+			printf("%u\n",p_temp);
+		}
+		else {printf("Bad expression\n");}
+	}
+	return 0;
+}
+
+static int cmd_w(char *args){
+  if(args == NULL){
+    Log("Press the w $pc = ADDR/n ");
+  }
+  else{ 
+    printf("Begin set\n");
+    int no = set_watchpoint(args);
+    printf("success set watchpoint\n");
+    if(no != -1){
+      printf("Set watchpoint #%d\n",no);
+    }else{
+      printf("Bad expression.\n");
+    }
+  }
+
+  return 0;
+}
+
+static int cmd_d(char *args){
+  char *arg = strtok(NULL, " ");
+  if (args ==  NULL){ 
+    printf("Press 'd number'\n");
+    return 0;
+  }else{
+      int no = sscanf(args,"%d",&no);
+      //printf("no:%d\n",no);
+      if(!delete_watchpoint(no))
+      printf("The watchpoint %s is no exist\n",arg);
+    }
+  return 0;
+}
+
+static int cmd_t(char *args){
+	printf("Enter the number need to be calculated.Max number 10000\n");
+	int test_num;
+	if(scanf("%d",&test_num))		test_expr(test_num);
+	else Log("Error number.\n");
+	return 0;
+}
+
+static int cmd_sir(char *args){
+	char *arg = strtok(NULL, " ");
+	int step;
+	if(args == NULL) step = 1;
+	else sscanf(arg,"%d",&step);
+	while(step)
+	{ 
+		cpu_exec(1);
+		isa_reg_display();
+		step--;
+	}
+	return 0;
+	
+}
+
+/*static int cmd_point(char *args){
+	char *pc = strtok(NULL," "); 
+	long int cpu_pc = (long int)cpu.pc;
+	int num=0;
+	if(args == NULL) printf("Wrong point.Input point ADDR.\n");
+	else
+	{
+		sscanf(args,"%s",pc);
+		while(*pc != cpu_pc && num<128 && nemu_state.state != NEMU_RUNNING){
+			printf("pc:%s,cpu.pc:%#lx\n",pc,cpu_pc);
+			cpu_exec(1);
+			num++;
+		}
+		cmd_info("r");
+	}
+	return 0;
+}*/
+
 static int cmd_help(char *args);
 
 static struct {
@@ -62,8 +200,16 @@ static struct {
   { "help", "Display information about all supported commands", cmd_help },
   { "c", "Continue the execution of the program", cmd_c },
   { "q", "Exit NEMU", cmd_q },
-
-  /* TODO: Add more commands */
+	{ "si", "Execute n steps program", cmd_si},
+	{ "info", "Print registers", cmd_info },
+	{ "x", "x N EXPR.\tEvaluate the value of the expression EXPR and use the result as the starting memory address, output in hexadecimal form N consecutive 4 bytes" , cmd_x},
+	{"p","p $eax+1\tEvaluate the value of the expression EXPR, which is supported by EXPR.",cmd_p},
+  {"d","d no\tDelete the watchpoint.",cmd_d},
+  {"w","w EXPR\tWhen the value of expression EXPR changes,program execution is suspended.",cmd_w},
+	{"t","t\ttest cmd_p can success run.",cmd_t},
+	{"sir", "sir N\tsi N and info r.",cmd_sir},	
+	//{"point","point pc\tbreak point at $pc=addr.",cmd_point},
+	/* TODO: Add more commands */
 
 };
 
