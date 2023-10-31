@@ -23,11 +23,16 @@ typedef struct watchpoint {
 
   /* TODO: Add more members if necessary */
 <<<<<<< HEAD
+<<<<<<< HEAD
 	char *expr;
 	word_t old_val;
 =======
 
 >>>>>>> 1eba5dd7 (NJU-ProjectN/nemu ics2023 initialized)
+=======
+	char *expr;
+	word_t old_val;
+>>>>>>> 2be579ae (pa1)
 } WP;
 
 static WP wp_pool[NR_WP] = {};
@@ -46,6 +51,9 @@ void init_wp_pool() {
 
 /* TODO: Implement the functionality of watchpoint */
 <<<<<<< HEAD
+<<<<<<< HEAD
+=======
+>>>>>>> 2be579ae (pa1)
 static WP* new_wp(){
 	assert(free_ != NULL);
 	WP *p = free_;
@@ -110,15 +118,23 @@ void scan_watchpoint(vaddr_t pc){
 		bool success;
 		word_t new_val = expr(p->expr,&success);
 		if(p->old_val != new_val){
+<<<<<<< HEAD
 			printf("watchpoint %d at address %ld ,expr=%s\n",p->NO,pc,p->expr);
 			printf("old_val=%lu\tnew_val=%ld\n",p->old_val,new_val);
+=======
+			printf("watchpoint %d at address %d ,expr=%s\n",p->NO,pc,p->expr);
+			printf("old_val=%u\tnew_val=%d\n",p->old_val,new_val);
+>>>>>>> 2be579ae (pa1)
 			p->old_val=new_val;
 			nemu_state.state = NEMU_STOP;
 			return;
 		}
 	}
 }
+<<<<<<< HEAD
 
 =======
 >>>>>>> 1eba5dd7 (NJU-ProjectN/nemu ics2023 initialized)
+=======
+>>>>>>> 2be579ae (pa1)
 

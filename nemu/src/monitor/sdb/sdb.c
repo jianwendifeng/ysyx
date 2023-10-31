@@ -19,23 +19,33 @@
 #include <readline/history.h>
 #include "sdb.h"
 <<<<<<< HEAD
+<<<<<<< HEAD
 #include <memory/vaddr.h>
 =======
 >>>>>>> 1eba5dd7 (NJU-ProjectN/nemu ics2023 initialized)
+=======
+#include <memory/vaddr.h>
+>>>>>>> 2be579ae (pa1)
 
 static int is_batch_mode = false;
 
 void init_regex();
 void init_wp_pool();
 <<<<<<< HEAD
+<<<<<<< HEAD
+=======
+>>>>>>> 2be579ae (pa1)
 word_t expr();
 void list_watchpoint();
 bool delete_watchpoint(int no);
 void scan_watchpoint(vaddr_t pc);
 int set_watchpoint(char *e);
 int test_expr();
+<<<<<<< HEAD
 =======
 >>>>>>> 1eba5dd7 (NJU-ProjectN/nemu ics2023 initialized)
+=======
+>>>>>>> 2be579ae (pa1)
 
 /* We use the `readline' library to provide more flexibility to read from stdin. */
 static char* rl_gets() {
@@ -49,10 +59,14 @@ static char* rl_gets() {
   line_read = readline("(nemu) ");
 
 <<<<<<< HEAD
+<<<<<<< HEAD
   if  (line_read && *line_read) {
 =======
   if (line_read && *line_read) {
 >>>>>>> 1eba5dd7 (NJU-ProjectN/nemu ics2023 initialized)
+=======
+  if  (line_read && *line_read) {
+>>>>>>> 2be579ae (pa1)
     add_history(line_read);
   }
 
@@ -70,6 +84,9 @@ static int cmd_q(char *args) {
 }
 
 <<<<<<< HEAD
+<<<<<<< HEAD
+=======
+>>>>>>> 2be579ae (pa1)
 static int cmd_si(char *args) {
 	char *arg = strtok(NULL, " ");
 	int step;
@@ -99,10 +116,24 @@ static int cmd_x(char *args){
         printf("Wrong Command!\n");
         return 0;
     }
+<<<<<<< HEAD
 	int len,addr,i;
 	sscanf(args,"%d %x",&len,&addr);
 	for(i= 0;i<len;i++ ) {
 		printf("0x%ox\t0x%0lx\n",addr,vaddr_read(addr,4));
+=======
+	int len,i;
+  uint32_t addr;
+	sscanf(args,"%d %x",&len,&addr);
+  if((addr < 0x8000000) || (addr > 0x8fffffff)){
+    printf("\n-----\nOut of pmem at addr:%x\n-----\n",addr);
+    return 0;
+  }
+  // printf("\n-----\naddr:%x\n-----\n",addr);
+
+	for(i= 0;i<len;i++ ) {
+		printf("0x%x\t0x%0x\n",addr,vaddr_read(addr,4));
+>>>>>>> 2be579ae (pa1)
 		addr+=4;
 	}
 
@@ -114,7 +145,11 @@ static int cmd_p(char *args){
 		bool success;
 		word_t p_temp=expr(args,&success);
 		if(success){  
+<<<<<<< HEAD
 			printf("%lu\n",p_temp);
+=======
+			printf("%u\n",p_temp);
+>>>>>>> 2be579ae (pa1)
 		}
 		else {printf("Bad expression\n");}
 	}
@@ -194,8 +229,11 @@ static int cmd_sir(char *args){
 	return 0;
 }*/
 
+<<<<<<< HEAD
 =======
 >>>>>>> 1eba5dd7 (NJU-ProjectN/nemu ics2023 initialized)
+=======
+>>>>>>> 2be579ae (pa1)
 static int cmd_help(char *args);
 
 static struct {
@@ -207,6 +245,9 @@ static struct {
   { "c", "Continue the execution of the program", cmd_c },
   { "q", "Exit NEMU", cmd_q },
 <<<<<<< HEAD
+<<<<<<< HEAD
+=======
+>>>>>>> 2be579ae (pa1)
 	{ "si", "Execute n steps program", cmd_si},
 	{ "info", "Print registers", cmd_info },
 	{ "x", "x N EXPR.\tEvaluate the value of the expression EXPR and use the result as the starting memory address, output in hexadecimal form N consecutive 4 bytes" , cmd_x},
@@ -217,10 +258,13 @@ static struct {
 	{"sir", "sir N\tsi N and info r.",cmd_sir},	
 	//{"point","point pc\tbreak point at $pc=addr.",cmd_point},
 	/* TODO: Add more commands */
+<<<<<<< HEAD
 =======
 
   /* TODO: Add more commands */
 >>>>>>> 1eba5dd7 (NJU-ProjectN/nemu ics2023 initialized)
+=======
+>>>>>>> 2be579ae (pa1)
 
 };
 

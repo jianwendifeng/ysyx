@@ -41,8 +41,11 @@ static void welcome() {
   //assert(0);
 =======
   Log("Exercise: Please remove me in the source code and compile NEMU again.");
+<<<<<<< HEAD
   assert(0);
 >>>>>>> 1eba5dd7 (NJU-ProjectN/nemu ics2023 initialized)
+=======
+>>>>>>> 2be579ae (pa1)
 }
 
 #ifndef CONFIG_TARGET_AM
