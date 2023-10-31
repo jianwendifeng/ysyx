@@ -3,6 +3,7 @@
 
 #define SYNC_ADDR (VGACTL_ADDR + 4)
 
+<<<<<<< HEAD
 #define W 400
 #define H 300
 
@@ -22,10 +23,21 @@ void __am_gpu_config(AM_GPU_CONFIG_T *cfg) {
     .width = W, 
     .height = H,
     .vmemsz = W*H*sizeof(uint32_t)
+=======
+void __am_gpu_init() {
+}
+
+void __am_gpu_config(AM_GPU_CONFIG_T *cfg) {
+  *cfg = (AM_GPU_CONFIG_T) {
+    .present = true, .has_accel = false,
+    .width = 0, .height = 0,
+    .vmemsz = 0
+>>>>>>> a55e7fc7 (NJU-ProjectN/abstract-machine ics2023 initialized)
   };
 }
 
 void __am_gpu_fbdraw(AM_GPU_FBDRAW_T *ctl) {
+<<<<<<< HEAD
   int x = ctl->x , y = ctl->y , w = ctl->w , h = ctl->h;
   uint32_t* pixels = (uint32_t *)ctl->pixels;
   uint32_t* fb = (uint32_t *)(uintptr_t)FB_ADDR;
@@ -36,6 +48,8 @@ void __am_gpu_fbdraw(AM_GPU_FBDRAW_T *ctl) {
     }
   }
 
+=======
+>>>>>>> a55e7fc7 (NJU-ProjectN/abstract-machine ics2023 initialized)
   if (ctl->sync) {
     outl(SYNC_ADDR, 1);
   }
