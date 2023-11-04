@@ -12,7 +12,13 @@ void __am_input_keybrd(AM_INPUT_KEYBRD_T *kbd) {
 #define KEYDOWN_MASK 0x8000
 
 void __am_input_keybrd(AM_INPUT_KEYBRD_T *kbd) {
+<<<<<<< HEAD
   kbd->keydown = 0;
   kbd->keycode = AM_KEY_NONE;
 >>>>>>> a55e7fc7 (NJU-ProjectN/abstract-machine ics2023 initialized)
+=======
+  int kb_data = inl(KBD_ADDR);
+  kbd->keydown = (kb_data & KEYDOWN_MASK) ? true : false ;
+  kbd->keycode = kb_data & ~ KEYDOWN_MASK;
+>>>>>>> 37f0006a (pa2)
 }

@@ -2,6 +2,8 @@
 #include <nemu.h>
 
 #define SYNC_ADDR (VGACTL_ADDR + 4)
+#define W 400
+#define H 300
 
 <<<<<<< HEAD
 #define W 400
@@ -25,31 +27,53 @@ void __am_gpu_config(AM_GPU_CONFIG_T *cfg) {
     .vmemsz = W*H*sizeof(uint32_t)
 =======
 void __am_gpu_init() {
+  // int i;
+  // int w = W;  // TODO: get the correct width
+  // int h = H;  // TODO: get the correct height
+  // uint32_t *fb = (uint32_t *)(uintptr_t)FB_ADDR;
+  // for (i = 0; i < w * h; i ++) fb[i] = i;
+  // outl(SYNC_ADDR, 1);
 }
 
 void __am_gpu_config(AM_GPU_CONFIG_T *cfg) {
   *cfg = (AM_GPU_CONFIG_T) {
     .present = true, .has_accel = false,
+<<<<<<< HEAD
     .width = 0, .height = 0,
     .vmemsz = 0
 >>>>>>> a55e7fc7 (NJU-ProjectN/abstract-machine ics2023 initialized)
+=======
+    .width = W, .height = H,
+    .vmemsz = W*H*sizeof(uint32_t)
+>>>>>>> 37f0006a (pa2)
   };
 }
 
 void __am_gpu_fbdraw(AM_GPU_FBDRAW_T *ctl) {
 <<<<<<< HEAD
+<<<<<<< HEAD
+=======
+>>>>>>> 37f0006a (pa2)
   int x = ctl->x , y = ctl->y , w = ctl->w , h = ctl->h;
   uint32_t* pixels = (uint32_t *)ctl->pixels;
   uint32_t* fb = (uint32_t *)(uintptr_t)FB_ADDR;
 
+<<<<<<< HEAD
   for(int i=0; i < h ; i++){          //i is height
     for(int j = 0 ; j <w ; j++){     //j is weight
+=======
+  for(int i = 0; i < h ; i++){          //i is height
+    for(int j = 0 ; j <w ; j++){        //j is weight
+>>>>>>> 37f0006a (pa2)
       fb[(x + j) + (y + i)*W] = pixels[(w * i) + j];
     }
   }
 
+<<<<<<< HEAD
 =======
 >>>>>>> a55e7fc7 (NJU-ProjectN/abstract-machine ics2023 initialized)
+=======
+>>>>>>> 37f0006a (pa2)
   if (ctl->sync) {
     outl(SYNC_ADDR, 1);
   }

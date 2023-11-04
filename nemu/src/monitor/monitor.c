@@ -19,9 +19,13 @@
 void init_rand();
 void init_log(const char *log_file);
 <<<<<<< HEAD
+<<<<<<< HEAD
 void init_ftrace(const char *ftrace_file);
 =======
 >>>>>>> 1eba5dd7 (NJU-ProjectN/nemu ics2023 initialized)
+=======
+void init_ftrace(const char *ftrace_file);
+>>>>>>> 37f0006a (pa2)
 void init_mem();
 void init_difftest(char *ref_so_file, long img_size, int port);
 void init_device();
@@ -37,6 +41,7 @@ static void welcome() {
   printf("Welcome to %s-NEMU!\n", ANSI_FMT(str(__GUEST_ISA__), ANSI_FG_YELLOW ANSI_BG_RED));
   printf("For help, type \"help\"\n");
 <<<<<<< HEAD
+<<<<<<< HEAD
   //Log("Exercise: Please remove me in the source code and compile NEMU again.");
   //assert(0);
 =======
@@ -46,6 +51,9 @@ static void welcome() {
 >>>>>>> 1eba5dd7 (NJU-ProjectN/nemu ics2023 initialized)
 =======
 >>>>>>> 2be579ae (pa1)
+=======
+  // Log("Exercise: Please remove me in the source code and compile NEMU again.");
+>>>>>>> 37f0006a (pa2)
 }
 
 #ifndef CONFIG_TARGET_AM
@@ -57,9 +65,13 @@ static char *log_file = NULL;
 static char *diff_so_file = NULL;
 static char *img_file = NULL;
 <<<<<<< HEAD
+<<<<<<< HEAD
 static char *elf_file =NULL;
 =======
 >>>>>>> 1eba5dd7 (NJU-ProjectN/nemu ics2023 initialized)
+=======
+static char *elf_file =NULL;
+>>>>>>> 37f0006a (pa2)
 static int difftest_port = 1234;
 
 static long load_img() {
@@ -90,27 +102,39 @@ static int parse_args(int argc, char *argv[]) {
     {"log"      , required_argument, NULL, 'l'},
     {"diff"     , required_argument, NULL, 'd'},
 <<<<<<< HEAD
+<<<<<<< HEAD
     {"elf"      , required_argument, NULL, 'e'},
 =======
 >>>>>>> 1eba5dd7 (NJU-ProjectN/nemu ics2023 initialized)
+=======
+    {"elf"      , required_argument, NULL, 'e'},
+>>>>>>> 37f0006a (pa2)
     {"port"     , required_argument, NULL, 'p'},
     {"help"     , no_argument      , NULL, 'h'},
     {0          , 0                , NULL,  0 },
   };
   int o;
 <<<<<<< HEAD
+<<<<<<< HEAD
   while ( (o = getopt_long(argc, argv, "-bhl:e:d:p:", table, NULL)) != -1) {
 =======
   while ( (o = getopt_long(argc, argv, "-bhl:d:p:", table, NULL)) != -1) {
 >>>>>>> 1eba5dd7 (NJU-ProjectN/nemu ics2023 initialized)
+=======
+  while ( (o = getopt_long(argc, argv, "-bhl:e:d:p:", table, NULL)) != -1) {
+>>>>>>> 37f0006a (pa2)
     switch (o) {
       case 'b': sdb_set_batch_mode(); break;
       case 'p': sscanf(optarg, "%d", &difftest_port); break;
       case 'l': log_file = optarg; break;
 <<<<<<< HEAD
+<<<<<<< HEAD
       case 'e': elf_file = optarg; break;
 =======
 >>>>>>> 1eba5dd7 (NJU-ProjectN/nemu ics2023 initialized)
+=======
+      case 'e': elf_file = optarg; break;
+>>>>>>> 37f0006a (pa2)
       case 'd': diff_so_file = optarg; break;
       case 1: img_file = optarg; return 0;
       default:
@@ -120,9 +144,13 @@ static int parse_args(int argc, char *argv[]) {
         printf("\t-d,--diff=REF_SO        run DiffTest with reference REF_SO\n");
         printf("\t-p,--port=PORT          run DiffTest with port PORT\n");
 <<<<<<< HEAD
+<<<<<<< HEAD
         printf("\t-e,--elf=FILE           run ftrace\n");
 =======
 >>>>>>> 1eba5dd7 (NJU-ProjectN/nemu ics2023 initialized)
+=======
+        printf("\t-e,--elf=FILE           run ftrace\n");
+>>>>>>> 37f0006a (pa2)
         printf("\n");
         exit(0);
     }
@@ -144,6 +172,7 @@ void init_monitor(int argc, char *argv[]) {
   /* Open the log file. */
   init_log(log_file);
 
+<<<<<<< HEAD
     /* Initialize ftrace. */
   init_ftrace(elf_file);
 
@@ -152,6 +181,11 @@ void init_monitor(int argc, char *argv[]) {
   init_log(log_file);
 
 >>>>>>> 1eba5dd7 (NJU-ProjectN/nemu ics2023 initialized)
+=======
+  /* Initialize ftrace. */
+  IFDEF(CONFIG_FTRACE, init_ftrace(elf_file));
+
+>>>>>>> 37f0006a (pa2)
   /* Initialize memory. */
   init_mem();
 

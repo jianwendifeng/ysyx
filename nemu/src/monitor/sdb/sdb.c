@@ -132,8 +132,12 @@ static int cmd_x(char *args){
   // printf("\n-----\naddr:%x\n-----\n",addr);
 
 	for(i= 0;i<len;i++ ) {
+<<<<<<< HEAD
 		printf("0x%x\t0x%0x\n",addr,vaddr_read(addr,4));
 >>>>>>> 2be579ae (pa1)
+=======
+		printf("0x%x\t0x%0lx\n",addr,vaddr_read(addr,4));
+>>>>>>> 37f0006a (pa2)
 		addr+=4;
 	}
 
@@ -146,10 +150,14 @@ static int cmd_p(char *args){
 		word_t p_temp=expr(args,&success);
 		if(success){  
 <<<<<<< HEAD
+<<<<<<< HEAD
 			printf("%lu\n",p_temp);
 =======
 			printf("%u\n",p_temp);
 >>>>>>> 2be579ae (pa1)
+=======
+			printf("%lu\n",p_temp);
+>>>>>>> 37f0006a (pa2)
 		}
 		else {printf("Bad expression\n");}
 	}

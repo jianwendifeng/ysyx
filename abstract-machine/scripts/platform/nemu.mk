@@ -12,11 +12,16 @@ LDFLAGS   += -T $(AM_HOME)/scripts/linker.ld \
              --defsym=_pmem_start=0x80000000 --defsym=_entry_offset=0x0
 LDFLAGS   += --gc-sections -e _start
 <<<<<<< HEAD
+<<<<<<< HEAD
 NEMUFLAGS += -b -l $(shell dirname $(IMAGE).elf)/nemu-log.txt                #批处理-b  
 NEMUFLAGS += -e  $(IMAGE).elf
 =======
 NEMUFLAGS += -l $(shell dirname $(IMAGE).elf)/nemu-log.txt
 >>>>>>> a55e7fc7 (NJU-ProjectN/abstract-machine ics2023 initialized)
+=======
+NEMUFLAGS += -b -l $(shell dirname $(IMAGE).elf)/nemu-log.txt
+NEMUFLAGS += -e  $(IMAGE).elf 
+>>>>>>> 37f0006a (pa2)
 
 CFLAGS += -DMAINARGS=\"$(mainargs)\"
 CFLAGS += -I$(AM_HOME)/am/src/platform/nemu/include

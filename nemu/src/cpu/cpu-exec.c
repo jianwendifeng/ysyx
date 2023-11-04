@@ -42,7 +42,14 @@ static bool g_print_step = false;
 void device_update();
 
 <<<<<<< HEAD
+<<<<<<< HEAD
 #ifdef CONFIG_ITRACE_COND
+=======
+
+#ifdef CONFIG_IRINGBUF
+
+#define iringbuf_size 32//size of iringbuf
+>>>>>>> 37f0006a (pa2)
 long int instr_num();
 
 struct ringbuf
@@ -60,18 +67,27 @@ void write_iringbuf(Decode s){
 }
 
 void read_iringbuf(){
+<<<<<<< HEAD
   int i = iringbuf.num ;
   int n = iringbuf_size;
   printf("\n");
   while(n--)
   {
     printf("%s\t\t\n",iringbuf.instr[i % iringbuf_size].logbuf);
+=======
+  int i = iringbuf.num - iringbuf_size;
+  printf("\n");
+  while(i <= iringbuf.num)
+  {
+    printf("%s\t\t\n",iringbuf.instr[(i + iringbuf_size - 1) % iringbuf_size].logbuf);
+>>>>>>> 37f0006a (pa2)
     i++;
   }
   printf("\n\n");
 }
 #endif
 
+<<<<<<< HEAD
 static void trace_and_difftest(Decode *_this, vaddr_t dnpc) {
 #ifdef CONFIG_ITRACE_COND
   if (ITRACE_COND) { log_write("%s\n", _this->logbuf); //itrace
@@ -85,6 +101,9 @@ static void trace_and_difftest(Decode *_this, vaddr_t dnpc) {
   if (nemu_state.halt_ret != 0 || nemu_state.state != NEMU_RUNNING) { read_iringbuf(); }  //when nemu output iringbuf.Difftest will change nemu.state.state = NEMU_ABROAT;nemu_state.hal_ret = pc
   #endif
 =======
+=======
+
+>>>>>>> 37f0006a (pa2)
 static void trace_and_difftest(Decode *_this, vaddr_t dnpc) {
 #ifdef CONFIG_ITRACE_COND
   if (ITRACE_COND) { log_write("%s\n", _this->logbuf); }
@@ -129,6 +148,12 @@ static void execute(uint64_t n) {
   Decode s;
   for (;n > 0; n --) {
     exec_once(&s, cpu.pc);
+
+
+    #ifdef CONFIG_IRINGBUF
+      write_iringbuf(s) ;  //iringbuf write
+    #endif
+    
     g_nr_guest_inst ++;
     trace_and_difftest(&s, cpu.pc);
 <<<<<<< HEAD
@@ -152,6 +177,9 @@ static void statistic() {
   Log("total guest instructions = " NUMBERIC_FMT, g_nr_guest_inst);
   if (g_timer > 0) Log("simulation frequency = " NUMBERIC_FMT " inst/s", g_nr_guest_inst * 1000000 / g_timer);
   else Log("Finish running in less than 1 us and can not calculate the simulation frequency");
+
+  IFDEF(CONFIG_IRINGBUF, read_iringbuf() ); //irngbuf read
+
 }
 
 <<<<<<< HEAD
