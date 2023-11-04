@@ -105,8 +105,8 @@ void scan_watchpoint(vaddr_t pc){
 		bool success;
 		word_t new_val = expr(p->expr,&success);
 		if(p->old_val != new_val){
-			printf("watchpoint %d at address %d ,expr=%s\n",p->NO,pc,p->expr);
-			printf("old_val=%u\tnew_val=%d\n",p->old_val,new_val);
+			printf("watchpoint %d at address %ld ,expr=%s\n",p->NO,pc,p->expr);
+			printf("old_val=%lu\tnew_val=%ld\n",p->old_val,new_val);
 			p->old_val=new_val;
 			nemu_state.state = NEMU_STOP;
 			return;

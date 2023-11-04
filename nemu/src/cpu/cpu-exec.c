@@ -32,6 +32,39 @@ static bool g_print_step = false;
 
 void device_update();
 
+
+#ifdef CONFIG_IRINGBUF
+
+#define iringbuf_size 32//size of iringbuf
+long int instr_num();
+
+struct ringbuf
+{
+  Decode instr[iringbuf_size];	//data
+  int num;
+
+} iringbuf={0};
+
+void write_iringbuf(Decode s){
+  iringbuf.instr[iringbuf.num % iringbuf_size] = s;
+  // iringbuf.num = (iringbuf.num++)%16;  //undefined operation
+  iringbuf.num++;
+  iringbuf.num = iringbuf.num % iringbuf_size;
+}
+
+void read_iringbuf(){
+  int i = iringbuf.num - iringbuf_size;
+  printf("\n");
+  while(i <= iringbuf.num)
+  {
+    printf("%s\t\t\n",iringbuf.instr[(i + iringbuf_size - 1) % iringbuf_size].logbuf);
+    i++;
+  }
+  printf("\n\n");
+}
+#endif
+
+
 static void trace_and_difftest(Decode *_this, vaddr_t dnpc) {
 #ifdef CONFIG_ITRACE_COND
   if (ITRACE_COND) { log_write("%s\n", _this->logbuf); }
@@ -75,6 +108,12 @@ static void execute(uint64_t n) {
   Decode s;
   for (;n > 0; n --) {
     exec_once(&s, cpu.pc);
+
+
+    #ifdef CONFIG_IRINGBUF
+      write_iringbuf(s) ;  //iringbuf write
+    #endif
+    
     g_nr_guest_inst ++;
     trace_and_difftest(&s, cpu.pc);
     if (nemu_state.state != NEMU_RUNNING) break;
@@ -89,6 +128,9 @@ static void statistic() {
   Log("total guest instructions = " NUMBERIC_FMT, g_nr_guest_inst);
   if (g_timer > 0) Log("simulation frequency = " NUMBERIC_FMT " inst/s", g_nr_guest_inst * 1000000 / g_timer);
   else Log("Finish running in less than 1 us and can not calculate the simulation frequency");
+
+  IFDEF(CONFIG_IRINGBUF, read_iringbuf() ); //irngbuf read
+
 }
 
 void assert_fail_msg() {

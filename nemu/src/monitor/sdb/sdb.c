@@ -98,7 +98,7 @@ static int cmd_x(char *args){
   // printf("\n-----\naddr:%x\n-----\n",addr);
 
 	for(i= 0;i<len;i++ ) {
-		printf("0x%x\t0x%0x\n",addr,vaddr_read(addr,4));
+		printf("0x%x\t0x%0lx\n",addr,vaddr_read(addr,4));
 		addr+=4;
 	}
 
@@ -110,7 +110,7 @@ static int cmd_p(char *args){
 		bool success;
 		word_t p_temp=expr(args,&success);
 		if(success){  
-			printf("%u\n",p_temp);
+			printf("%lu\n",p_temp);
 		}
 		else {printf("Bad expression\n");}
 	}
