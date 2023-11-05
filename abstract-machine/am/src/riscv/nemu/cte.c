@@ -5,12 +5,35 @@
 static Context* (*user_handler)(Event, Context*) = NULL;
 
 Context* __am_irq_handle(Context *c) {
+#ifdef CONFIG_ETRACE
+  printf("\n-----\nc->mcause:%x,\tc->gpr1:%x\n-----\n",c->mcause,c->GPR1);
+#endif
   if (user_handler) {
     Event ev = {0};
     switch (c->mcause) {
-      default: ev.event = EVENT_ERROR; break;
+      case 0xb: //M-mode
+        if(c->GPR1 == -1){
+          #ifdef CONFIG_ETRACE
+          printf("\n-----\n_am_irq_handle\tevent_yeild\n-----\n");
+          #endif
+          ev.event = EVENT_YIELD; 
+          c->mepc = c->mepc + 4;
+          break;
+        } 
+        else if(c->GPR1  >= 0  && c->GPR1 <= 19){
+          ev.event = EVENT_SYSCALL;
+          c->mepc = c->mepc + 4;
+          break;
+        }
+        
+      default: 
+        #ifdef CONFIG_ETRACE
+        printf("\n-----\nError event\tmcause :%d\n-----\n",c->mcause);
+        #endif
+        ev.event = EVENT_ERROR; 
+        
+        break;
     }
-
     c = user_handler(ev, c);
     assert(c != NULL);
   }

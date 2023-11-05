@@ -19,8 +19,17 @@
 #include <common.h>
 
 typedef struct {
+  vaddr_t mepc;     //存放触发异常的PC
+  word_t mstatus;  //存放处理器的状态   //rv32 32位，rv64 36位
+  word_t mcause;   //存放触发异常的原因
+  word_t mtvec;    //异常入口地址
+} csr_register;
+
+
+typedef struct {
   word_t gpr[MUXDEF(CONFIG_RVE, 16, 32)];
   vaddr_t pc;
+  csr_register  csr;
 } MUXDEF(CONFIG_RV64, riscv64_CPU_state, riscv32_CPU_state);
 
 // decode

@@ -27,6 +27,30 @@ extern void ftrace_call(vaddr_t pc,vaddr_t dnpc);
 extern void ftrace_ret(vaddr_t pc,vaddr_t dnpc);
 void ftrace_func();
 
+static vaddr_t *csr_reg(word_t imm){
+	switch (imm)
+	{
+		case 0x341: return &(cpu.csr.mepc);		//341 mepc
+		case 0x342: return &(cpu.csr.mcause);	//342 mcause
+		case 0x300: return &(cpu.csr.mstatus);	//300 mstatus
+		case 0x305: return &(cpu.csr.mtvec);	//305 mtvec
+		default: panic("\n-----------------\nCan't find this csr-----------------\n");
+	}
+}
+
+#define CSR(imm) *csr_reg(imm)
+#define MEPC cpu.csr.mepc	// mepc	存放触发异常的PC
+#define MSTATUS cpu.csr.mstatus	//mstatus	存放处理器的状态
+#define MCAUSE cpu.csr.mcause	//mcause	存放触发异常的原因
+
+word_t mret_inst(word_t old_mstatus){
+	word_t new_mstatus;
+	new_mstatus =((BITS(old_mstatus, 36, 13) << 13) | BITS(0, 1, 0) << 11 | (BITS(old_mstatus, 10, 8) << 8) | (1 << 7) | (BITS(old_mstatus, 5, 2) << 2) | BITS(old_mstatus, 7, 7) << 1 | 0) ;//mret指令	mstatus寄存器MIE域被更新为当前MPIE的值。MPIE 域的值则更新为1	??mstatus7->mstatus3, mstatus7 ==1
+	//MRET then in mstatus/mstatush sets MPV（）=0, MPP（12，11）=0,MIE（3，3）=MPIE（7，7）, and MPIE（7，7）=1. Lastly, MRET sets the privilege mode as previously determined, and sets pc=mepc
+	// printf("\n+++++\nMRET inst:\tOld mstatus: %lx\tNew mstatus: %lx\n+++++\n",old_mstatus,new_mstatus);
+	return new_mstatus;
+}
+
 enum {
   TYPE_I, TYPE_U, TYPE_S, TYPE_J, TYPE_B, TYPE_R,
   TYPE_N, // none
@@ -144,6 +168,12 @@ static int decode_exec(Decode *s) {
 	INSTPAT("0000001 ????? ????? 101 ????? 01110 11", divuw  , R, R(rd) = SEXT((uint32_t)src1 / (uint32_t)src2,  32) );
 	INSTPAT("0000001 ????? ????? 110 ????? 01110 11", remw   , R, R(rd) = SEXT((int32_t)src1 % (int32_t)src2, 32) );
 	INSTPAT("0000001 ????? ????? 111 ????? 01110 11", remuw  , R, R(rd) = SEXT((uint32_t)src1 % (uint32_t)src2, 32) );
+  
+  INSTPAT("0000000 00000 00000 000 00000 11100 11", ecall  , I, s->dnpc = (isa_raise_intr(0xb,s->pc)) );
+	INSTPAT("??????? ????? ????? 001 ????? 11100 11", csrrw  , I, R(rd) = CSR(imm); CSR(imm) = src1 );		//csrw mtvec r(I)  		mtvec: IMM = 0011 0100 0010 0000		0X342420
+	INSTPAT("??????? ????? ????? 010 ????? 11100 11", csrrs  , I, R(rd) = CSR(imm); CSR(imm) |= src1 );	
+	INSTPAT("??????? ????? ????? 011 ????? 11100 11", csrrc  , I, R(rd) = CSR(imm); CSR(imm) = src1 );
+	INSTPAT("0011000 00010 00000 000 00000 11100 11", mret   , N, s->dnpc = MEPC; MSTATUS = mret_inst(MSTATUS) );	//0x341 mepc 	0x300 mstatus
 
 	INSTPAT("0000000 00001 00000 000 00000 11100 11", ebreak , N, NEMUTRAP(s->pc, R(10))); // R(10) is $a0
   INSTPAT("??????? ????? ????? ??? ????? ????? ??", inv    , N, INV(s->pc));
