@@ -14,7 +14,7 @@ Context* __am_irq_handle(Context *c) {
       case 0xb: //M-mode
         if(c->GPR1 == -1){
           #ifdef CONFIG_ETRACE
-          printf("\n-----\n_am_irq_handle\tevent_yeild\n-----\n");
+            printf("\n-----\n_am_irq_handle\tevent_yeild\n-----\n");
           #endif
           ev.event = EVENT_YIELD; 
           c->mepc = c->mepc + 4;
@@ -27,11 +27,8 @@ Context* __am_irq_handle(Context *c) {
         }
         
       default: 
-        #ifdef CONFIG_ETRACE
         printf("\n-----\nError event\tmcause :%d\n-----\n",c->mcause);
-        #endif
         ev.event = EVENT_ERROR; 
-        
         break;
     }
     c = user_handler(ev, c);
@@ -61,6 +58,7 @@ void yield() {
 #ifdef __riscv_e
   asm volatile("li a5, -1; ecall");
 #else
+  printf("\n1----\n-----\n");
   asm volatile("li a7, -1; ecall");
 #endif
 }
