@@ -5,7 +5,7 @@
 
 #ifdef CONFIG_FTRACE
 
-#define func_num_max 64
+#define func_num_max 128
 
 typedef struct
 {
