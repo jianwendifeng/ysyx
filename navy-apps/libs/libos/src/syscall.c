@@ -61,41 +61,46 @@ void _exit(int status) {
 }
 
 int _open(const char *path, int flags, mode_t mode) {
-  _exit(SYS_open);
-  return 0;
+  return _syscall_(SYS_open, (intptr_t)path, flags, mode);
 }
 
 int _write(int fd, void *buf, size_t count) {
-  _exit(SYS_write);
-  return 0;
+  return _syscall_(SYS_write, fd, (intptr_t)buf, count);
 }
 
+extern char _end;
+intptr_t end_addr = (intptr_t)&_end;
+
+
 void *_sbrk(intptr_t increment) {
-  return (void *)-1;
+  intptr_t old_sbrk = end_addr; //program break一开始的位置位于_end
+  intptr_t new_program_break = end_addr + increment;  //被调用时, 根据记录的program break位置和参数increment, 计算出新program break   通过SYS_brk系统调用来让操作系统设置新program break
+  if(_syscall_(SYS_brk, (__intptr_t)new_program_break, 0, 0) == 0){
+    end_addr += increment;
+    return (void*)old_sbrk;
+  }
+  return (void *)-1;  //error -1
 }
 
 int _read(int fd, void *buf, size_t count) {
-  _exit(SYS_read);
-  return 0;
+  return _syscall_(SYS_read, fd, (intptr_t)buf, count);
 }
 
 int _close(int fd) {
-  _exit(SYS_close);
-  return 0;
+  return _syscall_(SYS_close, fd, 0, 0);
 }
 
 off_t _lseek(int fd, off_t offset, int whence) {
-  _exit(SYS_lseek);
-  return 0;
+  return _syscall_(SYS_lseek, fd, (intptr_t)offset, whence);
 }
 
 int _gettimeofday(struct timeval *tv, struct timezone *tz) {
-  _exit(SYS_gettimeofday);
-  return 0;
+  return  _syscall_(SYS_gettimeofday, (intptr_t)tv, (intptr_t)tz, 0);
+   
 }
 
 int _execve(const char *fname, char * const argv[], char *const envp[]) {
-  _exit(SYS_execve);
+  _syscall_(SYS_execve, (intptr_t)fname, (intptr_t)argv, (intptr_t)envp);
   return 0;
 }
 
