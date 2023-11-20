@@ -12,6 +12,7 @@
 extern size_t ramdisk_read(void *buf, size_t offset, size_t len);
 extern size_t ramdisk_write(const void *buf, size_t offset, size_t len);
 
+
 static uintptr_t loader(PCB *pcb, const char *filename) {
 // TODO();
 
@@ -23,7 +24,6 @@ static uintptr_t loader(PCB *pcb, const char *filename) {
   // printf("\n-----\ne_ident%p\n-----\n",mun);
   assert(*(uint32_t *)elf_header.e_ident == 0x464C457F);
 
-
   Elf_Phdr p_header[elf_header.e_phnum];
 
   ramdisk_read(p_header, elf_header.e_phoff, sizeof(Elf_Phdr)*elf_header.e_phnum);
@@ -34,10 +34,9 @@ static uintptr_t loader(PCB *pcb, const char *filename) {
       memset((void*)(p_header[i].p_filesz + p_header[i].p_vaddr) , 0 , p_header[i].p_memsz - p_header[i].p_filesz);
     }
   }  
-
   return elf_header.e_entry;
-
 }
+
 
 void naive_uload(PCB *pcb, const char *filename) {
   uintptr_t entry = loader(pcb, filename);

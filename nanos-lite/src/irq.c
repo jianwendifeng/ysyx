@@ -2,14 +2,15 @@
 extern void do_syscall(Context* c);
 
 static Context* do_event(Event e, Context* c) {
+  // printf("\n-----\ne.event:%d\n-----\n",e.event);
   switch (e.event) {
     case EVENT_YIELD:
-          // c->mepc = c->mepc + 4;  
+          // c->mepc = c->mepc + 4;  //native couldn't have mepc,in am
           break;
-    // case EVENT_SYSCALL: 
-    //       do_syscall(c);  
-    //       // c->mepc = c->mepc + 4; 
-    //       break;
+    case EVENT_SYSCALL: 
+          do_syscall(c);  
+          // c->mepc = c->mepc + 4; 
+          break;
     case EVENT_ERROR : 
           printf("\n-----\ndo_event error\n-----\n"); 
           break;

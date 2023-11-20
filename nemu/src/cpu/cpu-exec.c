@@ -25,7 +25,9 @@
  */
 #define MAX_INST_TO_PRINT 10
 
-CPU_state cpu = {};
+CPU_state cpu = {
+  .csr.mstatus = 0xa00001800
+};
 uint64_t g_nr_guest_inst = 0;
 static uint64_t g_timer = 0; // unit: us
 static bool g_print_step = false;
@@ -55,13 +57,15 @@ void write_iringbuf(Decode s){
 void read_iringbuf(){
   int i = iringbuf.num - iringbuf_size;
   printf("\n");
-  while(i <= iringbuf.num)
+  while(i < iringbuf.num)
   {
-    printf("%s\t\t\n",iringbuf.instr[(i + iringbuf_size - 1) % iringbuf_size].logbuf);
+    printf("%s\t\t\n",iringbuf.instr[(i + iringbuf_size ) % iringbuf_size].logbuf);
     i++;
   }
   printf("\n\n");
 }
+
+
 #endif
 
 
@@ -74,6 +78,10 @@ static void trace_and_difftest(Decode *_this, vaddr_t dnpc) {
 }
 
 static void exec_once(Decode *s, vaddr_t pc) {
+  #ifdef CONFIG_IRINGBUF
+      write_iringbuf(*s) ;  //iringbuf write
+    #endif
+
   s->pc = pc;
   s->snpc = pc;
   isa_exec_once(s);
@@ -107,13 +115,8 @@ static void exec_once(Decode *s, vaddr_t pc) {
 static void execute(uint64_t n) {
   Decode s;
   for (;n > 0; n --) {
+     
     exec_once(&s, cpu.pc);
-
-
-    #ifdef CONFIG_IRINGBUF
-      write_iringbuf(s) ;  //iringbuf write
-    #endif
-    
     g_nr_guest_inst ++;
     trace_and_difftest(&s, cpu.pc);
     if (nemu_state.state != NEMU_RUNNING) break;
