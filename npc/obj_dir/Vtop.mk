@@ -10,7 +10,11 @@ default: Vtop
 # Perl executable (from $PERL)
 PERL = perl
 # Path to Verilator kit (from $VERILATOR_ROOT)
+<<<<<<< HEAD
 VERILATOR_ROOT = /home/todas/verilator
+=======
+VERILATOR_ROOT = /home/todas/Program/verilator
+>>>>>>> 51f4568c (单周期基本框架)
 # SystemC include directory with systemc.h (from $SYSTEMC_INCLUDE)
 SYSTEMC_INCLUDE ?= 
 # SystemC library directory with libsystemc.a (from $SYSTEMC_LIBDIR)

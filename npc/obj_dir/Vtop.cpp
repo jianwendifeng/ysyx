@@ -13,7 +13,10 @@ Vtop::Vtop(VerilatedContext* _vcontextp__, const char* _vcname__)
     , vlSymsp{new Vtop__Syms(contextp(), _vcname__, this)}
     , clk{vlSymsp->TOP.clk}
     , rst{vlSymsp->TOP.rst}
+<<<<<<< HEAD
     , npc_data{vlSymsp->TOP.npc_data}
+=======
+>>>>>>> 51f4568c (单周期基本框架)
     , rootp{&(vlSymsp->TOP)}
 {
     // Register model with the context

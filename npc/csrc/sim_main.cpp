@@ -31,5 +31,9 @@ int main(int argc,char** argv) {
 	m_trace->close();
 	delete dut;
 	return 0;
+<<<<<<< HEAD
 }
 
+=======
+}
+>>>>>>> 51f4568c (单周期基本框架)

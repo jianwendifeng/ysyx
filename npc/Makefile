@@ -1,4 +1,5 @@
 <<<<<<< HEAD
+<<<<<<< HEAD
 =======
 # all:
 # 	@echo "Write this Makefile by your self."
@@ -10,6 +11,8 @@
 # include ../Makefile
 
 >>>>>>> f308b630 (NJU-ProjectN/nvboard master initialized without tracing)
+=======
+>>>>>>> 51f4568c (单周期基本框架)
 BUILD_DIR = ./build
 
 TOPNAME = top 
@@ -47,8 +50,7 @@ clean:
 
 
 VERILATOR = verilator
-VERILATOR_CFLAGS += -MMD --build -cc  \
-				-O3 --x-assign fast --x-initial fast --noassert
+VERILATOR_CFLAGS += -MMD --build -cc  -O3 --x-assign fast --x-initial fast --noassert
 
 OBJ_DIR = $(BUILD_DIR)/obj_dir
 BIN = $(BUILD_DIR)/$(TOPNAME)
