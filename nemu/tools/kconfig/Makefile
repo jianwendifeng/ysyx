@@ -5,6 +5,14 @@ SRCS += $(obj)/lexer.lex.c $(obj)/parser.tab.c
 CC = gcc
 CFLAGS += -DYYDEBUG
 INC_PATH += .
+<<<<<<< HEAD
+=======
+DISTRO = $(shell cat /etc/os-release | grep PRETTY_NAME | sed 's/PRETTY_NAME=//')
+
+ifeq ($(DISTRO),"Gentoo Linux")
+LIBS += -ltinfo
+endif
+>>>>>>> 1eba5dd7 (NJU-ProjectN/nemu ics2023 initialized)
 
 ifeq ($(NAME),conf)
 SRCS += conf.c

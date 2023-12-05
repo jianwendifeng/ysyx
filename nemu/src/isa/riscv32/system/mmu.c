@@ -14,8 +14,13 @@
 ***************************************************************************************/
 
 #include <isa.h>
+<<<<<<< HEAD
 #include <memory/paddr.h>
 #include <memory/vaddr.h>
+=======
+#include <memory/vaddr.h>
+#include <memory/paddr.h>
+>>>>>>> 1eba5dd7 (NJU-ProjectN/nemu ics2023 initialized)
 
 paddr_t isa_mmu_translate(vaddr_t vaddr, int len, int type) {
   return MEM_RET_FAIL;

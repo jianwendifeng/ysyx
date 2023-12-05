@@ -103,8 +103,13 @@ void difftest_step(vaddr_t pc, vaddr_t npc) {
   CPU_state ref_r;
 
   if (skip_dut_nr_inst > 0) {
+<<<<<<< HEAD
     ref_difftest_regcpy(&ref_r, DIFFTEST_TO_DUT);	
     if (ref_r.pc == npc) {	
+=======
+    ref_difftest_regcpy(&ref_r, DIFFTEST_TO_DUT);
+    if (ref_r.pc == npc) {
+>>>>>>> 1eba5dd7 (NJU-ProjectN/nemu ics2023 initialized)
       skip_dut_nr_inst = 0;
       checkregs(&ref_r, npc);
       return;

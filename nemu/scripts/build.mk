@@ -49,7 +49,11 @@ $(OBJ_DIR)/%.o: %.cc
 
 app: $(BINARY)
 
+<<<<<<< HEAD
 $(BINARY): $(OBJS) $(ARCHIVES)
+=======
+$(BINARY):: $(OBJS) $(ARCHIVES)
+>>>>>>> 1eba5dd7 (NJU-ProjectN/nemu ics2023 initialized)
 	@echo + LD $@
 	@$(LD) -o $@ $(OBJS) $(LDFLAGS) $(ARCHIVES) $(LIBS)
 

@@ -18,18 +18,24 @@
 #include <readline/readline.h>
 #include <readline/history.h>
 #include "sdb.h"
+<<<<<<< HEAD
 #include <memory/vaddr.h>
+=======
+>>>>>>> 1eba5dd7 (NJU-ProjectN/nemu ics2023 initialized)
 
 static int is_batch_mode = false;
 
 void init_regex();
 void init_wp_pool();
+<<<<<<< HEAD
 word_t expr();
 void list_watchpoint();
 bool delete_watchpoint(int no);
 void scan_watchpoint(vaddr_t pc);
 int set_watchpoint(char *e);
 int test_expr();
+=======
+>>>>>>> 1eba5dd7 (NJU-ProjectN/nemu ics2023 initialized)
 
 /* We use the `readline' library to provide more flexibility to read from stdin. */
 static char* rl_gets() {
@@ -42,7 +48,11 @@ static char* rl_gets() {
 
   line_read = readline("(nemu) ");
 
+<<<<<<< HEAD
   if  (line_read && *line_read) {
+=======
+  if (line_read && *line_read) {
+>>>>>>> 1eba5dd7 (NJU-ProjectN/nemu ics2023 initialized)
     add_history(line_read);
   }
 
@@ -59,6 +69,7 @@ static int cmd_q(char *args) {
   return -1;
 }
 
+<<<<<<< HEAD
 static int cmd_si(char *args) {
 	char *arg = strtok(NULL, " ");
 	int step;
@@ -183,6 +194,8 @@ static int cmd_sir(char *args){
 	return 0;
 }*/
 
+=======
+>>>>>>> 1eba5dd7 (NJU-ProjectN/nemu ics2023 initialized)
 static int cmd_help(char *args);
 
 static struct {
@@ -193,6 +206,7 @@ static struct {
   { "help", "Display information about all supported commands", cmd_help },
   { "c", "Continue the execution of the program", cmd_c },
   { "q", "Exit NEMU", cmd_q },
+<<<<<<< HEAD
 	{ "si", "Execute n steps program", cmd_si},
 	{ "info", "Print registers", cmd_info },
 	{ "x", "x N EXPR.\tEvaluate the value of the expression EXPR and use the result as the starting memory address, output in hexadecimal form N consecutive 4 bytes" , cmd_x},
@@ -203,6 +217,10 @@ static struct {
 	{"sir", "sir N\tsi N and info r.",cmd_sir},	
 	//{"point","point pc\tbreak point at $pc=addr.",cmd_point},
 	/* TODO: Add more commands */
+=======
+
+  /* TODO: Add more commands */
+>>>>>>> 1eba5dd7 (NJU-ProjectN/nemu ics2023 initialized)
 
 };
 

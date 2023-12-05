@@ -46,6 +46,7 @@ void init_mem() {
   pmem = malloc(CONFIG_MSIZE);
   assert(pmem);
 #endif
+<<<<<<< HEAD
 #ifdef CONFIG_MEM_RANDOM
   uint32_t *p = (uint32_t *)pmem;
   int i;
@@ -53,6 +54,9 @@ void init_mem() {
     p[i] = rand();
   }
 #endif
+=======
+  IFDEF(CONFIG_MEM_RANDOM, memset(pmem, rand(), CONFIG_MSIZE));
+>>>>>>> 1eba5dd7 (NJU-ProjectN/nemu ics2023 initialized)
   Log("physical memory area [" FMT_PADDR ", " FMT_PADDR "]", PMEM_LEFT, PMEM_RIGHT);
 }
 

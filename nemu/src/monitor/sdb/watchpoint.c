@@ -22,8 +22,12 @@ typedef struct watchpoint {
   struct watchpoint *next;
 
   /* TODO: Add more members if necessary */
+<<<<<<< HEAD
 	char *expr;
 	word_t old_val;
+=======
+
+>>>>>>> 1eba5dd7 (NJU-ProjectN/nemu ics2023 initialized)
 } WP;
 
 static WP wp_pool[NR_WP] = {};
@@ -41,6 +45,7 @@ void init_wp_pool() {
 }
 
 /* TODO: Implement the functionality of watchpoint */
+<<<<<<< HEAD
 static WP* new_wp(){
 	assert(free_ != NULL);
 	WP *p = free_;
@@ -114,4 +119,6 @@ void scan_watchpoint(vaddr_t pc){
 	}
 }
 
+=======
+>>>>>>> 1eba5dd7 (NJU-ProjectN/nemu ics2023 initialized)
 

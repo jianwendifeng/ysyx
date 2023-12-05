@@ -13,12 +13,18 @@
 * See the Mulan PSL v2 for more details.
 ***************************************************************************************/
 
+<<<<<<< HEAD
 #ifndef __RISCV32_REG_H__
 #define __RISCV32_REG_H__
+=======
+#ifndef __RISCV_REG_H__
+#define __RISCV_REG_H__
+>>>>>>> 1eba5dd7 (NJU-ProjectN/nemu ics2023 initialized)
 
 #include <common.h>
 
 static inline int check_reg_idx(int idx) {
+<<<<<<< HEAD
   IFDEF(CONFIG_RT_CHECK, assert(idx >= 0 && idx < 32));
   return idx;
 }
@@ -26,6 +32,15 @@ static inline int check_reg_idx(int idx) {
 #define gpr(idx) cpu.gpr[check_reg_idx(idx)]
 
 static inline const char* reg_name(int idx, int width) {
+=======
+  IFDEF(CONFIG_RT_CHECK, assert(idx >= 0 && idx < MUXDEF(CONFIG_RVE, 16, 32)));
+  return idx;
+}
+
+#define gpr(idx) (cpu.gpr[check_reg_idx(idx)])
+
+static inline const char* reg_name(int idx) {
+>>>>>>> 1eba5dd7 (NJU-ProjectN/nemu ics2023 initialized)
   extern const char* regs[];
   return regs[check_reg_idx(idx)];
 }

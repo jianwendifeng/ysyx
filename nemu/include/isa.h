@@ -25,7 +25,11 @@ typedef concat(__GUEST_ISA__, _CPU_state) CPU_state;
 typedef concat(__GUEST_ISA__, _ISADecodeInfo) ISADecodeInfo;
 
 // monitor
+<<<<<<< HEAD
 extern char isa_logo[];
+=======
+extern unsigned char isa_logo[];
+>>>>>>> 1eba5dd7 (NJU-ProjectN/nemu ics2023 initialized)
 void init_isa();
 
 // reg

@@ -53,6 +53,10 @@ static void init_screen() {
   SDL_SetWindowTitle(window, title);
   texture = SDL_CreateTexture(renderer, SDL_PIXELFORMAT_ARGB8888,
       SDL_TEXTUREACCESS_STATIC, SCREEN_W, SCREEN_H);
+<<<<<<< HEAD
+=======
+  SDL_RenderPresent(renderer);
+>>>>>>> 1eba5dd7 (NJU-ProjectN/nemu ics2023 initialized)
 }
 
 static inline void update_screen() {
@@ -71,10 +75,13 @@ static inline void update_screen() {
 #endif
 
 void vga_update_screen() {
+<<<<<<< HEAD
    if(vgactl_port_base[1]) {
     update_screen();
     vgactl_port_base[1]  = 0;
   }
+=======
+>>>>>>> 1eba5dd7 (NJU-ProjectN/nemu ics2023 initialized)
   // TODO: call `update_screen()` when the sync register is non-zero,
   // then zero out the sync register
 }

@@ -2,15 +2,24 @@ mainmenu "NEMU Configuration Menu"
 
 choice
   prompt "Base ISA"
+<<<<<<< HEAD
   default ISA_riscv32
+=======
+  default ISA_riscv
+>>>>>>> 1eba5dd7 (NJU-ProjectN/nemu ics2023 initialized)
 config ISA_x86
   bool "x86"
 config ISA_mips32
   bool "mips32"
+<<<<<<< HEAD
 config ISA_riscv32
   bool "riscv32"
 config ISA_riscv64
   bool "riscv64"
+=======
+config ISA_riscv
+  bool "riscv"
+>>>>>>> 1eba5dd7 (NJU-ProjectN/nemu ics2023 initialized)
 config ISA_loongarch32r
   bool "loongarch32r"
 endchoice
@@ -19,17 +28,33 @@ config ISA
   string
   default "x86" if ISA_x86
   default "mips32" if ISA_mips32
+<<<<<<< HEAD
   default "riscv32" if ISA_riscv32
   default "riscv64" if ISA_riscv64
+=======
+  default "riscv32" if ISA_riscv && !RV64
+  default "riscv64" if ISA_riscv &&  RV64
+>>>>>>> 1eba5dd7 (NJU-ProjectN/nemu ics2023 initialized)
   default "loongarch32r" if ISA_loongarch32r
   default "none"
 
 config ISA64
+<<<<<<< HEAD
   depends on ISA_riscv64
+=======
+  depends on ISA_riscv && RV64
+>>>>>>> 1eba5dd7 (NJU-ProjectN/nemu ics2023 initialized)
   bool
   default y
 
 
+<<<<<<< HEAD
+=======
+if ISA_riscv
+source "src/isa/riscv32/Kconfig"
+endif
+
+>>>>>>> 1eba5dd7 (NJU-ProjectN/nemu ics2023 initialized)
 choice
   prompt "NEMU execution engine"
   default ENGINE_INTERPRETER
@@ -160,13 +185,21 @@ config DIFFTEST
 
 choice
   prompt "Reference design"
+<<<<<<< HEAD
   default DIFFTEST_REF_SPIKE if ISA_riscv64 || ISA_riscv32
+=======
+  default DIFFTEST_REF_SPIKE if ISA_riscv
+>>>>>>> 1eba5dd7 (NJU-ProjectN/nemu ics2023 initialized)
   default DIFFTEST_REF_KVM if ISA_x86
   default DIFFTEST_REF_QEMU
   depends on DIFFTEST
 config DIFFTEST_REF_QEMU
   bool "QEMU, communicate with socket"
+<<<<<<< HEAD
 if ISA_riscv64 || ISA_riscv32
+=======
+if ISA_riscv
+>>>>>>> 1eba5dd7 (NJU-ProjectN/nemu ics2023 initialized)
 config DIFFTEST_REF_SPIKE
   bool "Spike"
 endif

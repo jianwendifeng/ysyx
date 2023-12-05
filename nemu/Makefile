@@ -30,13 +30,22 @@ ENGINE ?= $(call remove_quote,$(CONFIG_ENGINE))
 NAME    = $(GUEST_ISA)-nemu-$(ENGINE)
 
 # Include all filelist.mk to merge file lists
+<<<<<<< HEAD
 FILELIST_MK = $(shell find ./src -name "filelist.mk")
+=======
+FILELIST_MK = $(shell find -L ./src -name "filelist.mk")
+>>>>>>> 1eba5dd7 (NJU-ProjectN/nemu ics2023 initialized)
 include $(FILELIST_MK)
 
 # Filter out directories and files in blacklist to obtain the final set of source files
 DIRS-BLACKLIST-y += $(DIRS-BLACKLIST)
+<<<<<<< HEAD
 SRCS-BLACKLIST-y += $(SRCS-BLACKLIST) $(shell find $(DIRS-BLACKLIST-y) -name "*.c")
 SRCS-y += $(shell find $(DIRS-y) -name "*.c")
+=======
+SRCS-BLACKLIST-y += $(SRCS-BLACKLIST) $(shell find -L $(DIRS-BLACKLIST-y) -name "*.c")
+SRCS-y += $(shell find -L $(DIRS-y) -name "*.c")
+>>>>>>> 1eba5dd7 (NJU-ProjectN/nemu ics2023 initialized)
 SRCS = $(filter-out $(SRCS-BLACKLIST-y),$(SRCS-y))
 
 # Extract compiler and options from menuconfig

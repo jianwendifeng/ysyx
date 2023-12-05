@@ -88,6 +88,11 @@ extern "C" void init_disasm(const char *triple) {
       AsmInfo->getAssemblerDialect(), *AsmInfo, *gMII, *gMRI);
   gIP->setPrintImmHex(true);
   gIP->setPrintBranchImmAsAddress(true);
+<<<<<<< HEAD
+=======
+  if (isa == "riscv32" || isa == "riscv64")
+    gIP->applyTargetSpecificCLOption("no-aliases");
+>>>>>>> 1eba5dd7 (NJU-ProjectN/nemu ics2023 initialized)
 }
 
 extern "C" void disassemble(char *str, int size, uint64_t pc, uint8_t *code, int nbyte) {

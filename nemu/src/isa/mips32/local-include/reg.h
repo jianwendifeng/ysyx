@@ -25,7 +25,11 @@ static inline int check_reg_idx(int idx) {
 
 #define gpr(idx) cpu.gpr[check_reg_idx(idx)]
 
+<<<<<<< HEAD
 static inline const char* reg_name(int idx, int width) {
+=======
+static inline const char* reg_name(int idx) {
+>>>>>>> 1eba5dd7 (NJU-ProjectN/nemu ics2023 initialized)
   extern const char* regs[];
   return regs[check_reg_idx(idx)];
 }

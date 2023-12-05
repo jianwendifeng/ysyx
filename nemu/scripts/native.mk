@@ -20,7 +20,11 @@ include $(NEMU_HOME)/tools/difftest.mk
 
 compile_git:
 	$(call git_commit, "compile NEMU")
+<<<<<<< HEAD
 $(BINARY): compile_git
+=======
+$(BINARY):: compile_git
+>>>>>>> 1eba5dd7 (NJU-ProjectN/nemu ics2023 initialized)
 
 # Some convenient rules
 

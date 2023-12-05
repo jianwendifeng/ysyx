@@ -22,7 +22,11 @@
 
 enum {
   TK_NOTYPE = 256, TK_EQ,
+<<<<<<< HEAD
 	TK_OR,TK_AND,TK_NEQ,TK_DEC,TK_HEX,TK_DEREF,TK_MINUS,TK_REG,	
+=======
+
+>>>>>>> 1eba5dd7 (NJU-ProjectN/nemu ics2023 initialized)
   /* TODO: Add more token types */
 
 };
@@ -39,6 +43,7 @@ static struct rule {
   {" +", TK_NOTYPE},    // spaces
   {"\\+", '+'},         // plus
   {"==", TK_EQ},        // equal
+<<<<<<< HEAD
 	{"\\-", '-'},					// subtract
   {"\\*", '*'},					// multiply
   {"\\/", '/'},					// divide
@@ -55,6 +60,12 @@ static struct rule {
 };
 
 #define NR_REGEX ARRLEN(rules)
+=======
+};
+
+#define NR_REGEX ARRLEN(rules)
+
+>>>>>>> 1eba5dd7 (NJU-ProjectN/nemu ics2023 initialized)
 static regex_t re[NR_REGEX] = {};
 
 /* Rules are used for many times.
@@ -65,7 +76,11 @@ void init_regex() {
   char error_msg[128];
   int ret;
 
+<<<<<<< HEAD
   for (i = 0; i  < NR_REGEX; i ++) {
+=======
+  for (i = 0; i < NR_REGEX; i ++) {
+>>>>>>> 1eba5dd7 (NJU-ProjectN/nemu ics2023 initialized)
     ret = regcomp(&re[i], rules[i].regex, REG_EXTENDED);
     if (ret != 0) {
       regerror(ret, &re[i], error_msg, 128);
@@ -76,8 +91,12 @@ void init_regex() {
 
 typedef struct token {
   int type;
+<<<<<<< HEAD
   //char str[32];
 	char str[1024+128];
+=======
+  char str[32];
+>>>>>>> 1eba5dd7 (NJU-ProjectN/nemu ics2023 initialized)
 } Token;
 
 static Token tokens[32] __attribute__((used)) = {};
@@ -108,11 +127,15 @@ static bool make_token(char *e) {
          */
 
         switch (rules[i].token_type) {
+<<<<<<< HEAD
 					case TK_NOTYPE:break;
 					case TK_DEC:
 					case TK_HEX:sprintf(tokens[nr_token].str,"%.*s",substr_len,substr_start);
 					default: tokens[nr_token].type = rules[i].token_type;
 									 nr_token++;
+=======
+          default: TODO();
+>>>>>>> 1eba5dd7 (NJU-ProjectN/nemu ics2023 initialized)
         }
 
         break;
@@ -128,6 +151,7 @@ static bool make_token(char *e) {
   return true;
 }
 
+<<<<<<< HEAD
 static int op_prec(int t){
 	switch(t){ 
 		case '!':case TK_DEREF:return 0;
@@ -233,12 +257,15 @@ static word_t eval(int p,int q,bool *success) {
 }
 
 
+=======
+>>>>>>> 1eba5dd7 (NJU-ProjectN/nemu ics2023 initialized)
 
 word_t expr(char *e, bool *success) {
   if (!make_token(e)) {
     *success = false;
     return 0;
   }
+<<<<<<< HEAD
 	int i;
 	for (i = 0; i < nr_token; i ++){
 		 if(tokens[i].type == '*' && (i == 0 || tokens[i-1].type != TK_DEC ||tokens[i-1].type != TK_HEX || tokens[i-1].type != ')' )){
@@ -246,6 +273,9 @@ word_t expr(char *e, bool *success) {
 		}
 	}
 	return eval(0,nr_token-1,success);
+=======
+
+>>>>>>> 1eba5dd7 (NJU-ProjectN/nemu ics2023 initialized)
   /* TODO: Insert codes to evaluate the expression. */
   TODO();
 

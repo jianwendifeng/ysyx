@@ -16,6 +16,11 @@
 #include <common.h>
 
 extern uint64_t g_nr_guest_inst;
+<<<<<<< HEAD
+=======
+
+#ifndef CONFIG_TARGET_AM
+>>>>>>> 1eba5dd7 (NJU-ProjectN/nemu ics2023 initialized)
 FILE *log_fp = NULL;
 
 void init_log(const char *log_file) {
@@ -32,3 +37,7 @@ bool log_enable() {
   return MUXDEF(CONFIG_TRACE, (g_nr_guest_inst >= CONFIG_TRACE_START) &&
          (g_nr_guest_inst <= CONFIG_TRACE_END), false);
 }
+<<<<<<< HEAD
+=======
+#endif
+>>>>>>> 1eba5dd7 (NJU-ProjectN/nemu ics2023 initialized)
